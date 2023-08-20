@@ -41,20 +41,25 @@ End Enum
 'End Function
 
 
-Public Sub CopyToCharArray(ByVal stringToCopy As String, ByRef chars() As String)
+Public Function Chars(ByVal stringToParse As String, ByVal index As Long)
+    Char = Mid$(stringToParse, index, 1)
+End Function
+
+
+Public Sub CopyToCharArray(ByVal stringToCopy As String, ByRef Chars() As String)
     Dim idx As Long
     For idx = 1 To Len(stringToCopy)
-        chars(idx - 1) = Mid$(stringToCopy, idx, 1)
+        Chars(idx - 1) = Mid$(stringToCopy, idx, 1)
     Next idx
 End Sub
 
 
 
 'public void CopyTo (int sourceIndex, char[] destination, int destinationIndex, int count);
-Public Sub CopyToCharArrayFrom(ByVal stringToCopy As String, ByVal sourceIndex As Long, ByRef chars() As String, ByVal destinationIndex As Long, ByVal count As Long)
+Public Sub CopyToCharArrayFrom(ByVal stringToCopy As String, ByVal sourceIndex As Long, ByRef Chars() As String, ByVal destinationIndex As Long, ByVal count As Long)
     Dim idx As Long
     Do
-        chars(destinationIndex + idx) = Mid$(stringToCopy, sourceIndex + idx + 1, 1)
+        Chars(destinationIndex + idx) = Mid$(stringToCopy, sourceIndex + idx + 1, 1)
         idx = idx + 1
     Loop While idx < count
 End Sub
@@ -62,10 +67,26 @@ End Sub
 
 
 
+Public Function CountSubstring(ByVal stringToSearch As String, ByVal substringToFind As String, Optional compare As Comparison = 0) As Long
+    Dim locn As Long: locn = IndexOf(stringToSearch, substringToFind, locn)
+    
+    Do While locn >= 0
+        locn = IndexOf(stringToSearch, substringToFind, locn + 1)
+        CountSubstring = CountSubstring + 1
+    Loop
+End Function
 
-Public Function Create(ByVal length As String, Optional ByVal defaultChar As String = " ") As String
-    vbspace
-    Create = Replace(Space(length), " ", defaultChar)
+
+
+
+
+Public Function Create(ByVal Length As String, Optional ByVal defaultChar As String = " ") As String
+    Create = Replace(Space(Length), " ", defaultChar)
+End Function
+
+
+Public Function EmptyString() As String
+    EmptyString = vbNullString
 End Function
 
 
@@ -90,8 +111,8 @@ End Function
 
 Public Function Equals(ByVal baseString As String, ByVal compareString As String, Optional ByVal ignoreCase As Boolean = False) As Boolean
     If ignoreCase Then
-        searchstring = LCase$(searchstring)
-        stringToFind = LCase$(stringToFind)
+        baseString = LCase$(baseString)
+        compareString = LCase$(compareString)
     End If
     Equals = baseString = compareString
 End Function
@@ -123,37 +144,37 @@ Public Function IndexOf(ByVal searchstring As String, ByVal stringToFind As Stri
 End Function
 
 
-Public Function IndexOfBetween(ByVal searchstring As String, ByVal stringToFind As String, ByVal startPos As Long, ByVal length As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function IndexOfBetween(ByVal searchstring As String, ByVal stringToFind As String, ByVal startPos As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
     If compare Mod 2 = 1 Then
         searchstring = LCase$(searchstring)
         stringToFind = LCase$(stringToFind)
     End If
     
     If compare = Binary Or BinaryIgnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, length), stringToFind, vbBinaryCompare) - 1
+        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, Length), stringToFind, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, length), stringToFind, vbTextCompare) - 1
+        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, Length), stringToFind, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, length), stringToFind, vbDatabaseCompare) - 1
+        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, Length), stringToFind, vbDatabaseCompare) - 1
     Else
-        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, length), stringToFind) - 1
+        IndexOfBetween = InStr(1, Mid$(searchstring, startPos, Length), stringToFind) - 1
     End If
 End Function
 
 
-Public Function IndexOfAny(ByVal searchstring As String, ByRef stringsToFind() As String, Optional ByVal startPos As Long = 0, Optional ByVal length As Long = 0) As Long
-    If length = 0 Then length = Len(searchstring)
+Public Function IndexOfAny(ByVal searchstring As String, ByRef stringsToFind() As String, Optional ByVal startPos As Long = 0, Optional ByVal Length As Long = 0) As Long
+    If Length = 0 Then Length = Len(searchstring)
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
-        IndexOfAny = IndexOfBetween(searchstring, stringsToFind(idx), startPos + 1, length)
+        IndexOfAny = IndexOfBetween(searchstring, stringsToFind(idx), startPos + 1, Length)
         If IndexOfAny > 0 Then Exit Function
     Next idx
 End Function
 
 
 
-Public Function IsNull(ByRef searchstring As String) As Boolean
-    IsNullString = searchstring = vbNullString
+Public Function IsNull(ByVal searchstring As String) As Boolean
+    IsNull = searchstring = vbNullString
 End Function
 
 
@@ -161,6 +182,7 @@ End Function
 Public Function IsNullOrWhiteSpace(ByRef searchstring As String) As Boolean
     'TODO - implement this
     'equivalent to: return String.IsNullOrEmpty(value) || value.Trim().Length == 0;
+    IsNullOrWhiteSpace = False
 End Function
 
 
@@ -186,50 +208,56 @@ End Function
 
 
 
-Sub test()
-    Dim s1 As String
-    s1 = "fasdfdsafa"
-    Dim out
-    out = LastIndexOfBetween(s1, "a", 6, 2)
-End Sub
-
-
-
-Public Function LastIndexOfBetween(ByVal searchstring As String, ByVal stringToFind As String, ByVal startIndex As Long, ByVal length As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOfBetween(ByVal searchstring As String, ByVal stringToFind As String, ByVal startIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
     If compare Mod 2 = 1 Then
         searchstring = LCase$(searchstring)
         stringToFind = LCase$(stringToFind)
     End If
     
     If compare = Binary Or BinaryIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - length, length), stringToFind, -1, vbBinaryCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - length, length), stringToFind, -1, vbTextCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - Length, Length), stringToFind, -1, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - length, length), stringToFind, -1, vbDatabaseCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
     Else
-        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - length, length), stringToFind, -1) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchstring, startIndex - Length, Length), stringToFind, -1) - 1
     End If
     If LastIndexOfBetween > -1 Then
-        LastIndexOfBetween = LastIndexOfBetween + startIndex - length - 1
+        LastIndexOfBetween = LastIndexOfBetween + startIndex - Length - 1
     End If
     
 End Function
 
 
-Public Function LastIndexOfAny(ByVal searchstring As String, ByRef stringsToFind() As String, Optional ByVal startPos As Long = 0, Optional ByVal length As Long = 0) As Long
-    If length = 0 Then length = Len(searchstring)
+Public Function LastIndexOfAny(ByVal searchstring As String, ByRef stringsToFind() As String, Optional ByVal startPos As Long = 0, Optional ByVal Length As Long = 0) As Long
+    If Length = 0 Then Length = Len(searchstring)
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
-        LastIndexOfAny = LastIndexOfBetween(searchstring, stringsToFind(idx), startPos + 1, length)
+        LastIndexOfAny = LastIndexOfBetween(searchstring, stringsToFind(idx), startPos + 1, Length)
         If LastIndexOfAny > 0 Then Exit Function
     Next idx
 End Function
 
 
 
+Public Function Left(ByVal stringToParse As String, ByVal count As Long) As String
+    Left = VBA.Left$(stringToParse, count)
+End Function
 
 
+
+
+Public Function Length(ByVal stringToParse As String) As Long
+    Length = Len(stringToParse)
+End Function
+
+
+
+
+Public Function Right(ByVal stringToParse As String, ByVal count As Long) As String
+    Right = VBA.Right$(stringToParse, count)
+End Function
 
 
 
@@ -244,13 +272,23 @@ End Function
 
 
 
-Public Function Substring(ByVal stringToCut As String, ByVal atPosition As Long, Optional ByVal length As Long = -1) As String
-    If length = -1 Then
-        Substring = Mid$(stringToCut, atPosition)
+
+
+Public Sub test()
+    Dim teststring As String
+    teststring = "Public Sub ParseModule(moduleName As String)"
+    Dim out As String
+    out = Substring(teststring, 11, 11)
+End Sub
+
+
+
+Public Function Substring(ByVal stringToCut As String, ByVal atPosition As Long, Optional ByVal Length As Long = -1) As String
+    If Length = -1 Then
+        Substring = Mid$(stringToCut, atPosition + 1)
     Else
-        Substring = Mid$(stringToCut, atPosition, length)
+        Substring = Mid$(stringToCut, atPosition + 1, Length)
     End If
-    
 End Function
 
 
