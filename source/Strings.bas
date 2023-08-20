@@ -4,7 +4,6 @@ Attribute VB_Name = "Strings"
 'Version(0.1)
 Option Explicit
 
-'compare
 Public Enum Comparison
 'vbUseCompareOption  -1 Performs a comparison by using the setting of the Option Compare statement.
 'vbBinaryCompare     0  Performs a binary comparison.
@@ -283,6 +282,15 @@ End Sub
 
 
 
+Public Function SubstringBetween(ByVal stringToCut As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
+    Dim startPos As Integer: startPos = Strings.IndexOf(stringToCut, firstString, startIndex) + Strings.Length(firstString)
+    Dim endPos As Integer: endPos = Strings.IndexOf(stringToCut, secondString, startPos)
+    SubstringBetween = Strings.Substring(stringToCut, startPos, endPos - startPos)
+End Function
+
+
+
+
 Public Function Substring(ByVal stringToCut As String, ByVal atPosition As Long, Optional ByVal Length As Long = -1) As String
     If Length = -1 Then
         Substring = Mid$(stringToCut, atPosition + 1)
@@ -318,3 +326,15 @@ Public Function ToUpper(ByVal stringToUppercase As String) As String
 End Function
 
 
+Public Function Trim(ByVal stringToTrim As String) As String
+    Trim = VBA.Trim$(stringToTrim)
+End Function
+
+
+Public Function TrimEnd(ByVal stringToTrim As String) As String
+    TrimEnd = VBA.RTrim$(stringToTrim)
+End Function
+
+Public Function TrimLeft(ByVal stringToTrim As String) As String
+    TrimLeft = VBA.LTrim$(stringToTrim)
+End Function
