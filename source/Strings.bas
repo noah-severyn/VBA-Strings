@@ -37,8 +37,8 @@ End Enum
 'incorrect in VBA because VBA uses signed 16-bit integer. Thus, after reaching 32767 AscW will start returning negative numbers. To work around this
 'issue use one of the functions below.
 '@Ignore UseMeaningfulName
-Public Function AscW2(ByVal char As String) As Long
-    AscW2 = AscW(char) And &HFFFF&
+Public Function AscW2(ByVal Char As String) As Long
+    AscW2 = AscW(Char) And &HFFFF&
 End Function
 
 'https://stackoverflow.com/questions/4805475/assignment-of-objects-in-vb6/4805812#4805812
@@ -86,24 +86,24 @@ Public Function Contains(ByVal searchString As String, ByVal stringToFind As Str
 End Function
 
 
-Public Function ContainsAfter(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
-    ContainsAfter = IndexOf(searchString, stringToFind, startIndex, compare) >= 0
+Public Function ContainsAfter(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal StartIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    ContainsAfter = IndexOf(searchString, stringToFind, StartIndex, compare) >= 0
 End Function
 
 
 
-Public Function ContainsBefore(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
-    Dim newString As String: newString = Left(searchString, endIndex)
-    ContainsBefore = IndexOf(newString, stringToFind, , compare) >= 0
+Public Function ContainsBefore(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal EndIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    Dim NewString As String: NewString = Left(searchString, EndIndex)
+    ContainsBefore = IndexOf(NewString, stringToFind, , compare) >= 0
 End Function
 
 
 
 
-Public Function ContainsAny(ByVal searchString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAny(ByVal searchString As String, ByVal stringsToFind As Variant, Optional ByVal StartIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
-        ContainsAny = IndexOf(searchString, stringsToFind(idx), startIndex, compare) >= 0
+        ContainsAny = IndexOf(searchString, stringsToFind(idx), StartIndex, compare) >= 0
         If ContainsAny Then Exit Function
     Next idx
 End Function
@@ -137,7 +137,7 @@ End Sub
 
 Public Function CountSubstring(ByVal stringToSearch As String, ByVal substringToFind As String, Optional ByVal compare As Comparison = 0) As Long
     Dim locn As Long: locn = IndexOf(stringToSearch, substringToFind, locn)
-    
+
     Do While locn >= 0
         locn = IndexOf(stringToSearch, substringToFind, locn + 1, compare)
         CountSubstring = CountSubstring + 1
@@ -148,7 +148,7 @@ End Function
 
 
 
-Public Function Create(ByVal Length As String, Optional ByVal defaultChar As String = " ") As String
+Public Function Create(ByVal Length As Long, Optional ByVal defaultChar As String = " ") As String
     Create = Replace(Space(Length), " ", defaultChar)
 End Function
 
@@ -202,7 +202,7 @@ Public Function IndexOf(ByVal searchString As String, ByVal stringToFind As Stri
         searchString = LCase$(searchString)
         stringToFind = LCase$(stringToFind)
     End If
-    
+
     If compare = Binary Or BinaryIgnoreCase Then
         IndexOf = InStr(startPos + 1, searchString, stringToFind, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
@@ -220,7 +220,7 @@ Public Function IndexOfBetween(ByVal searchString As String, ByVal stringToFind 
         searchString = LCase$(searchString)
         stringToFind = LCase$(stringToFind)
     End If
-    
+
     If compare = Binary Or BinaryIgnoreCase Then
         IndexOfBetween = InStr(1, Mid$(searchString, startPos, Length), stringToFind, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
@@ -264,7 +264,7 @@ Public Function LastIndexOf(ByVal searchString As String, ByVal stringToFind As 
         searchString = LCase$(searchString)
         stringToFind = LCase$(stringToFind)
     End If
-    
+
     If compare = Binary Or BinaryIgnoreCase Then
         LastIndexOf = InStrRev(searchString, stringToFind, startPos + 1, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
@@ -279,25 +279,25 @@ End Function
 
 
 
-Public Function LastIndexOfBetween(ByVal searchString As String, ByVal stringToFind As String, ByVal startIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOfBetween(ByVal searchString As String, ByVal stringToFind As String, ByVal StartIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
     If compare Mod 2 = 1 Then
         searchString = LCase$(searchString)
         stringToFind = LCase$(stringToFind)
     End If
-    
+
     If compare = Binary Or BinaryIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, startIndex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, startIndex - Length, Length), stringToFind, -1, vbTextCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, startIndex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
     Else
-        LastIndexOfBetween = InStrRev(Mid$(searchString, startIndex - Length, Length), stringToFind, -1) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1) - 1
     End If
     If LastIndexOfBetween > -1 Then
-        LastIndexOfBetween = LastIndexOfBetween + startIndex - Length - 1
+        LastIndexOfBetween = LastIndexOfBetween + StartIndex - Length - 1
     End If
-    
+
 End Function
 
 
@@ -335,21 +335,21 @@ End Function
 Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondString As String) As Double
     Dim firstLength As Long: firstLength = Len(firstString)
     Dim secondLength As Long: secondLength = Len(secondString)
-    
+
     ' Prepare distance array matrix with the proper indexes
     Dim distance() As Long
     ReDim distance(firstLength, secondLength)
-    
+
     Dim index As Long
     For index = 0 To firstLength
         distance(index, 0) = index
     Next
-    
+
     Dim innerIndex As Long
     For innerIndex = 0 To secondLength
         distance(0, innerIndex) = innerIndex
     Next
-    
+
     ' Outer loop is for the first string
     For index = 1 To firstLength
         ' Inner loop is for the second string
@@ -357,7 +357,7 @@ Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondStr
             ' Character matches exactly
             If Mid$(firstString, index, 1) = Mid$(secondString, innerIndex, 1) Then
                 distance(index, innerIndex) = distance(index - 1, innerIndex - 1)
-            
+
             ' Character is off, offset the matrix by the appropriate number.
             Else
                 Dim min1 As Long
@@ -370,7 +370,7 @@ Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondStr
                     min1 = min2
                 End If
                 min2 = distance(index - 1, innerIndex - 1) + 1
-    
+
                 If min2 < min1 Then
                     min1 = min2
                 End If
@@ -379,7 +379,7 @@ Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondStr
             End If
         Next
     Next
-    
+
     ' Levenshtein is the last index of the array.
     LevenshteinDistance = distance(firstLength, secondLength)
 End Function
@@ -396,7 +396,7 @@ Public Function MeasureSimilarity(ByVal firstString As String, ByVal secondStrin
     ' Levenshtein is the distance between two sequences
     Dim levenshtein As Double
     levenshtein = LevenshteinDistance(firstString, secondString)
-    
+
     ' Convert levenshtein into a percentage(0 to 100)
     MeasureSimilarity = (1 - (levenshtein / Application.Max(Len(firstString), Len(secondString)))) * 100
 End Function
@@ -437,8 +437,8 @@ End Function
 
 
 
-Public Function SubstringBetween(ByVal stringToCut As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
-    Dim startPos As Long: startPos = Strings.IndexOf(stringToCut, firstString, startIndex) + Strings.Length(firstString)
+Public Function SubstringBetween(ByVal stringToCut As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal StartIndex As Long = 0) As String
+    Dim startPos As Long: startPos = Strings.IndexOf(stringToCut, firstString, StartIndex) + Strings.Length(firstString)
     Dim endPos As Long: endPos = Strings.IndexOf(stringToCut, secondString, startPos)
     SubstringBetween = Strings.Substring(stringToCut, startPos, endPos - startPos)
 End Function
@@ -544,7 +544,7 @@ Public Function Truncate(ByRef source As String, ByVal maxLength As Long) As Str
         Truncate = source
         Exit Function
     End If
-    
+
     Const extention As String = "..."
     source = Left(source, maxLength - Len(extention)) & extention
     Truncate = source
