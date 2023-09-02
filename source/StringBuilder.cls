@@ -57,6 +57,12 @@ Option Explicit
 ''      EnsureCapacity method
 ''==============================================================================
 
+'TODO - also redesign to be 0-based
+Public Enum ProcessDirection
+    FromStart
+    FromEnd
+End Enum
+
 'Internal BUFFER Struct
 Private Type Buffer
     text_ As String
@@ -72,15 +78,15 @@ Private pMaxCapacity As Long
 '===============================================================================
 'Returns the capacity of the string i.e. total length of buffer
 '===============================================================================
-Public Property Get capacity() As Long
-    capacity = pBuffer.capacity_
+Public Property Get CurrentCapacity() As Long
+    Capacity = pBuffer.capacity_
 End Property
 
 '===============================================================================
 'Returns the length of the string i.e. total number of used characters
 '===============================================================================
-Public Property Get length() As Long
-    length = pBuffer.endIndex_
+Public Property Get Length() As Long
+    Length = pBuffer.endIndex_
 End Property
 
 '===============================================================================
@@ -88,19 +94,22 @@ End Property
 'Default class member. 'strBuffer.Value' can be also called as 'strBuffer'
 'Open class in a text editor to see: Attribute [procName].VB_UserMemId = 0
 '===============================================================================
-Public Property Get Value() As String
-    If pBuffer.endIndex_ > 0 Then
-        Value = VBA.Left$(pBuffer.text_, pBuffer.endIndex_)
-    End If
+'Public Property Get Value() As String
+'    If pBuffer.endIndex_ > 0 Then
+'        Value = VBA.Left$(pBuffer.text_, pBuffer.endIndex_)
+'    End If
+'End Property
+
+Public Property Get char(ByVal index As Long) As String 'TODO - redesign to be 0-based
+    char = Mid$(pBuffer.text_, index, 1)
 End Property
 
-Public Property Get Char(ByVal index As Long) As String
-    Char = Mid$(pBuffer.text_, index, 1)
-End Property
 
-
-Public Property Let MaxCapacity(ByVal capacity As Long)
-    pMaxCapacity = capacity
+'===============================================================================
+'Returns the maximum capacity of the string i.e. maximum the buffer will be allowed to be set
+'===============================================================================
+Public Property Let MaxCapacity(ByVal maximum As Long)
+    pMaxCapacity = maximum
 End Property
 Public Property Get MaxCapacity() As Long
     MaxCapacity = pMaxCapacity
@@ -127,7 +136,7 @@ Private Sub EnsureCapacity(ByVal minimumCapacity As Long)
             pBuffer.capacity_ = minimumCapacity * 2
         End If
 
-        pBuffer.text_ = pBuffer.text_ & VBA.Space$(pBuffer.capacity_ - oldCapacity)
+        pBuffer.text_ = pBuffer.text_ & VBA.space$(pBuffer.capacity_ - oldCapacity)
     End If
 End Sub
 
@@ -161,7 +170,7 @@ Public Sub AppendMultiple(ParamArray values() As Variant)
     Next idx
 End Sub
 
-Public Sub AppendJoin(ByVal separator As String, values() As String)
+Public Sub AppendJoin(ByVal separator As String, ByRef values() As String)
     Dim idx As Long
     For idx = LBound(values) To UBound(values)
         Append separator
@@ -188,19 +197,40 @@ End Sub
 
 
 
+'0-based index
+Public Function IndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
+    'TODO - I dont't think the case comparison would work
+    If compare Mod 2 = 1 Then
+        'searchString = LCase$(searchString)
+        stringToFind = LCase$(stringToFind)
+    End If
+
+    If compare = Binary Or BinaryIgnoreCase Then
+        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbBinaryCompare) - 1
+    ElseIf compare = Text Or TextIngnoreCase Then
+        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbTextCompare) - 1
+    ElseIf compare = Database Or DatabaseIgnoreCase Then
+        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbDatabaseCompare) - 1
+    Else
+        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind) - 1
+    End If
+    If IndexOf >= pBuffer.endIndex_ Then IndexOf = -1
+End Function
+
+
 
 '****************************************************************************************************************************************************
 'Insert new text into buffer
 '****************************************************************************************************************************************************
-Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Optional ByVal repetitions As Long = 1)
-    If startIndex < 1 Or startIndex > pBuffer.endIndex_ Then
+Public Sub Insert(ByVal startindex As Long, ByRef textToInsert As String, Optional ByVal repetitions As Long = 1) 'TODO - redesign to be 0-based
+    If startindex < 0 Or startindex > pBuffer.endIndex_ Then
         Err.Raise 9, TypeName(Me) & ".Insert", "Invalid startIndex"
     End If
     
     Dim addedLength As Long: addedLength = VBA.Len(textToInsert)
     If addedLength = 0 Then Exit Sub 'Nothing to insert
     Dim newEndIndex As Long: newEndIndex = pBuffer.endIndex_ + addedLength
-    Dim shiftLength As Long: shiftLength = pBuffer.endIndex_ - startIndex + 1
+    Dim shiftLength As Long: shiftLength = pBuffer.endIndex_ - startindex
     
     'EnsureCapacity already checks for: newEndIndex > m_buffer.capacity_
     'When many appends are done (ex. 1 character at a time for a million times) then the extra 'If' is faster than exiting the scope of this function
@@ -208,16 +238,37 @@ Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Option
     If newEndIndex > pBuffer.capacity_ Then EnsureCapacity newEndIndex
     
     'Shift Text Right
-    Mid$(pBuffer.text_, startIndex + addedLength, shiftLength) = VBA.Mid$(pBuffer.text_, startIndex, shiftLength)
+    Mid$(pBuffer.text_, startindex + addedLength, shiftLength) = VBA.Mid$(pBuffer.text_, startindex, shiftLength)
     
     'Replace unused characters with the new text after the last used position. The Mid Statement can be used on the left hand of the assignment to
     'in-place replace characters: https://en.wikibooks.org/wiki/Visual_Basic/Built_In_String_Functions#Indexing_and_Substrings
-    Mid$(pBuffer.text_, startIndex, addedLength) = textToInsert
+    Mid$(pBuffer.text_, startindex + 1, addedLength) = textToInsert
     
     'Update last character position
     pBuffer.endIndex_ = newEndIndex
 End Sub
 
+
+Public Function LastIndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
+    'TODO - how to handle case comparisons
+    If compare Mod 2 = 1 Then
+        'searchString = LCase$(searchString)
+        stringToFind = LCase$(stringToFind)
+    End If
+    Dim pos As Long
+    If compare = Binary Or BinaryIgnoreCase Then
+        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbBinaryCompare) - 1
+    ElseIf compare = Text Or TextIngnoreCase Then
+        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbTextCompare) - 1
+    ElseIf compare = Database Or DatabaseIgnoreCase Then
+        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbDatabaseCompare) - 1
+    Else
+        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1) - 1
+    End If
+    
+    If pos >= pBuffer.endIndex_ Then pos = LastIndexOf(stringToFind, pos - 1, compare)
+    LastIndexOf = pos
+End Function
 
 
 
@@ -225,30 +276,28 @@ End Sub
 '****************************************************************************************************************************************************
 'Delete a portion of the text
 '****************************************************************************************************************************************************
-Public Sub Remove(ByVal startIndex As Long, ByVal count As Long)
+Public Sub Remove(ByVal startindex As Long, ByVal count As Long)
     'Validate Input
-    If startIndex < 1 Or startIndex > pBuffer.endIndex_ Then
+    If startindex < 0 Or startindex > pBuffer.endIndex_ Then
         Err.Raise 9, TypeName(Me) & ".Delete", "Invalid startIndex"
     ElseIf count < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Delete", "Invalid length_"
+        Err.Raise 5, TypeName(Me) & ".Delete", "Invalid count"
     ElseIf count = 0 Then
         Exit Sub 'Nothing to delete
     End If
     
     'Check if a simple shift of the endIndex would suffice
-    If startIndex + count > pBuffer.endIndex_ Then
+    If startindex + count > pBuffer.endIndex_ Then
         'Ignoring characters that were marked for deletion
-        pBuffer.endIndex_ = startIndex - 1
+        pBuffer.endIndex_ = startindex - 1
         Exit Sub
     End If
     
     Dim shiftLength As Long
-    
-    shiftLength = pBuffer.endIndex_ - startIndex - count + 1
+    shiftLength = pBuffer.endIndex_ - startindex - count
     
     'Shift Text Left
-    Mid$(pBuffer.text_, startIndex, shiftLength) _
-        = VBA.Mid$(pBuffer.text_, startIndex + count, shiftLength)
+    Mid$(pBuffer.text_, startindex + 1, shiftLength) = VBA.Mid$(pBuffer.text_, startindex + count + 1, shiftLength)
     
     'Update last character position
     pBuffer.endIndex_ = pBuffer.endIndex_ - count
@@ -260,35 +309,65 @@ End Sub
 '****************************************************************************************************************************************************
 'Replace a portion of the buffer with a given text
 '****************************************************************************************************************************************************
-Public Sub Overwrite(ByVal startIndex As Long, ByVal length As Long, ByRef replacementText As String)
+Public Sub Overwrite(ByVal startindex As Long, ByVal Length As Long, ByVal replacementText As String) 'TODO - redesign to be 0-based
     'Validate Input
-    If startIndex < 1 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Replace", "Invalid startIndex"
-    ElseIf length < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Replace", "Invalid length"
-    ElseIf length = 0 Then
+    If startindex < 0 Or startindex > pBuffer.endIndex_ Then
+        Err.Raise 9, TypeName(Me) & ".Overwrite", "Invalid startIndex"
+    ElseIf Length < 0 Then
+        Err.Raise 5, TypeName(Me) & ".Overwrite", "Invalid length"
+    ElseIf Length = 0 Then
         Exit Sub 'Nothing to replace
     End If
     
     Dim usedLength As Long
     
     'Compute usable length
-    If startIndex + length_ > pBuffer.endIndex_ + 1 Then
-        usedLength = pBuffer.endIndex_ + 1 - startIndex
+    If startindex + Length > pBuffer.endIndex_ + 1 Then
+        usedLength = pBuffer.endIndex_ - startindex
     Else
-        usedLength = length
+        usedLength = Length
     End If
     
-    'Replace characters with the new text. The Mid Statement can be used on the left hand of the assignment to
-    'in-place replace characters: https://en.wikibooks.org/wiki/Visual_Basic/Built_In_String_Functions#Indexing_and_Substrings
-    Mid$(pBuffer.text_, startIndex, usedLength) = replacementText
+    Mid$(pBuffer.text_, startindex + 1, usedLength) = replacementText
 End Sub
 
 
-Public Function ToString() As String
-    ToString = pBuffer.text_
-End Function
+Public Sub Replace(ByVal oldString As String, ByVal newString As String, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
+    'TODO - .Replace implement direction
+    Me.ReplaceBetween oldString, newString, 0, pBuffer.endIndex_, numberOfSubstitutions
+End Sub
 
+
+Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, ByVal startindex As Long, ByVal Length As Long, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
+'TODO - .ReplaceBetween implement direction
+    'Validate Input
+    If oldString = vbNullString Then
+        Err.Raise 5, TypeName(Me) & ".Replace", "String to find cannot be null"
+    ElseIf startindex < 0 Or startindex > pBuffer.endIndex_ Then
+        Err.Raise 9, TypeName(Me) & ".Replace", "Invalid startIndex"
+    ElseIf Length < -1 Then
+        Err.Raise 5, TypeName(Me) & ".Replace", "Invalid length"
+    ElseIf Length = 0 Or numberOfSubstitutions = 0 Then
+        Exit Sub 'Nothing to replace
+    End If
+    
+    Dim pos As Long: pos = startindex
+    Dim countSubs As Long
+    Dim maxSubs As Long
+    If numberOfSubstitutions = -1 Then
+        maxSubs = 2147483647
+    Else
+        maxSubs = numberOfSubstitutions
+    End If
+    
+    Do While pos < pBuffer.endIndex_ And countSubs < maxSubs
+        pos = Me.IndexOf(oldString, pos)
+        If pos = -1 Then Exit Sub 'No more replacements to make
+        Me.Remove pos, Len(oldString)
+        Me.Insert pos, newString, 1
+        countSubs = countSubs + 1
+    Loop
+End Sub
 
 
 
@@ -297,7 +376,7 @@ End Function
 '****************************************************************************************************************************************************
 Public Sub Reverse()
     If pBuffer.endIndex_ > 0 Then
-        Me.Replace 1, pBuffer.endIndex_, VBA.StrReverse(Me.Value)
+        Me.Overwrite 1, pBuffer.endIndex_, VBA.StrReverse(Me.Value)
     End If
 End Sub
 
@@ -307,25 +386,44 @@ End Sub
 '****************************************************************************************************************************************************
 'Returns a substring
 '****************************************************************************************************************************************************
-Public Function Substring(ByVal startIndex As Long, ByVal length_ As Long) As String
-    'Validate Input
-    If startIndex < 1 Or startIndex > pBuffer.endIndex_ Then
+Public Function Substring(ByVal startindex As Long, ByVal Length As Long) As String
+    If startindex < 0 Or startindex > pBuffer.endIndex_ Then
         Err.Raise 9, TypeName(Me) & ".Substring", "Invalid startIndex"
-    ElseIf length_ < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Substring", "Invalid length_"
-    ElseIf length_ = 0 Then
+    ElseIf Length < 0 Then
+        Err.Raise 5, TypeName(Me) & ".Substring", "Invalid length"
+    ElseIf Length = 0 Then
         Exit Function
     End If
-    '
+    
     Dim usedLength As Long
-    '
+    
     'Compute usable length
-    If startIndex + length_ > pBuffer.endIndex_ + 1 Then
-        usedLength = pBuffer.endIndex_ + 1 - startIndex
+    If startindex + Length > pBuffer.endIndex_ + 1 Then
+        usedLength = pBuffer.endIndex_ + 1 - startindex
     Else
-        usedLength = length_
+        usedLength = Length
     End If
-    '
-    Substring = VBA.Mid$(pBuffer.text_, startIndex, usedLength)
+    
+    Substring = VBA.Mid$(pBuffer.text_, startindex + 1, usedLength)
+End Function
+
+
+
+Public Function ToString(Optional ByVal startindex As Long = 0, Optional ByVal Length As Long = 0) As String
+    'Validate Input
+    If startindex < 0 Or startindex > pBuffer.endIndex_ Then
+        Err.Raise 9, TypeName(Me) & ".ToString", "Invalid startIndex"
+    ElseIf Length < 0 Then
+        Err.Raise 5, TypeName(Me) & ".ToString", "Invalid length"
+    ElseIf pBuffer.endIndex_ = 0 Then
+        ToString = vbNullString
+        Exit Function
+    End If
+    
+    If startindex > 0 Then
+        ToString = Me.Substring(startindex, Length)
+    Else
+        ToString = VBA.Left$(pBuffer.text_, pBuffer.endIndex_)
+    End If
 End Function
 

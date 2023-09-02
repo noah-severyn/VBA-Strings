@@ -4,6 +4,7 @@ Attribute VB_Name = "Strings"
 'Version(0.1)
 Option Explicit
 
+
 Public Enum Comparison
 'vbUseCompareOption  -1 Performs a comparison by using the setting of the Option Compare statement.
 'vbBinaryCompare     0  Performs a binary comparison.
@@ -37,8 +38,8 @@ End Enum
 'incorrect in VBA because VBA uses signed 16-bit integer. Thus, after reaching 32767 AscW will start returning negative numbers. To work around this
 'issue use one of the functions below.
 '@Ignore UseMeaningfulName
-Public Function AscW2(ByVal Char As String) As Long
-    AscW2 = AscW(Char) And &HFFFF&
+Public Function AscW2(ByVal char As String) As Long
+    AscW2 = AscW(char) And &HFFFF&
 End Function
 
 'https://stackoverflow.com/questions/4805475/assignment-of-objects-in-vb6/4805812#4805812
@@ -55,10 +56,10 @@ End Function
 
 Public Function Clean(ByVal textToClean As String, Optional ByVal nonPrintable As Boolean = True, Optional ByVal newLines As Boolean = True, Optional ByVal nonBreaking As Boolean = True, Optional ByVal trimString As Boolean = True, Optional ByVal newLineReplacement As String = " ") As String
     Clean = textToClean
-    If nonPrintable Then Clean = Strings.RemoveNonPrintableChars(Clean)
-    If newLines Then Clean = Strings.ReplaceNewLineChars(Clean, newLineReplacement)
-    If nonBreaking Then Clean = Strings.ReplaceNonBreakingSpaces(Clean)
-    If trimString Then Clean = Strings.Trim(Clean)
+    If nonPrintable Then Clean = strings.RemoveNonPrintableChars(Clean)
+    If newLines Then Clean = strings.ReplaceNewLineChars(Clean, newLineReplacement)
+    If nonBreaking Then Clean = strings.ReplaceNonBreakingSpaces(Clean)
+    If trimString Then Clean = strings.Trim(Clean)
 End Function
 
 
@@ -78,6 +79,22 @@ Public Function Coalesce(ParamArray params() As Variant) As String
 End Function
 
 
+Public Function Concat(ByVal delimiter As String, ParamArray args() As Variant) As String
+    Dim idx As Long
+    Dim idxInner As Long
+    For idx = LBound(args) To UBound(args)
+        If VBA.IsArray(args(idx)) Then
+            For idxInner = LBound(args(idx)) To UBound(args(idx))
+                Concat = Concat & CStr(args(idx)(idxInner))
+                If idxInner < UBound(args(idx)) - 1 Then Concat = Concat & delimiter
+            Next idxInner
+        Else
+            Concat = Concat & CStr(args(idx))
+            If idx < UBound(args) Then Concat = Concat & delimiter
+        End If
+    Next idx
+End Function
+
 
 
 
@@ -86,24 +103,24 @@ Public Function Contains(ByVal searchString As String, ByVal stringToFind As Str
 End Function
 
 
-Public Function ContainsAfter(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal StartIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
-    ContainsAfter = IndexOf(searchString, stringToFind, StartIndex, compare) >= 0
+Public Function ContainsAfter(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal startindex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    ContainsAfter = IndexOf(searchString, stringToFind, startindex, compare) >= 0
 End Function
 
 
 
 Public Function ContainsBefore(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal EndIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
-    Dim NewString As String: NewString = Left(searchString, EndIndex)
-    ContainsBefore = IndexOf(NewString, stringToFind, , compare) >= 0
+    Dim newString As String: newString = Left(searchString, EndIndex)
+    ContainsBefore = IndexOf(newString, stringToFind, , compare) >= 0
 End Function
 
 
 
 
-Public Function ContainsAny(ByVal searchString As String, ByVal stringsToFind As Variant, Optional ByVal StartIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAny(ByVal searchString As String, ByVal stringsToFind As Variant, Optional ByVal startindex As Long, Optional ByVal compare As Comparison = 0) As Boolean
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
-        ContainsAny = IndexOf(searchString, stringsToFind(idx), StartIndex, compare) >= 0
+        ContainsAny = IndexOf(searchString, stringsToFind(idx), startindex, compare) >= 0
         If ContainsAny Then Exit Function
     Next idx
 End Function
@@ -149,7 +166,7 @@ End Function
 
 
 Public Function Create(ByVal Length As Long, Optional ByVal defaultChar As String = " ") As String
-    Create = Replace(Space(Length), " ", defaultChar)
+    Create = Replace(space(Length), " ", defaultChar)
 End Function
 
 
@@ -180,12 +197,24 @@ End Function
 
 
 
-Public Function Equals(ByVal baseString As String, ByVal compareString As String, Optional ByVal ignoreCase As Boolean = False) As Boolean
-    If ignoreCase Then
+
+
+
+Public Function Equals(ByVal baseString As String, ByVal compare As Comparison, ByVal compareString As String) As Boolean
+    If compare Mod 2 = 1 Then
         baseString = LCase$(baseString)
         compareString = LCase$(compareString)
     End If
-    Equals = baseString = compareString
+    
+    Matches = baseString = compareString
+End Function
+
+Public Function EqualsAny(ByVal baseString As String, ByVal compare As Comparison, ParamArray compareStrings() As Variant) As Boolean
+    Dim idx As Long
+    For idx = LBound(compareStrings) To UBound(compareStrings)
+        MatchesAny = Matches(baseString, compare, compareStrings(idx))
+        If MatchesAny = True Then Exit Function
+    Next idx
 End Function
 
 
@@ -244,6 +273,13 @@ End Function
 
 
 
+Public Function Insert(ByVal baseString As String, ByVal startindex As Long, ByVal stringToInsert As String) As String
+    Insert = Left$(baseString, startindex) & stringToInsert & Right$(baseString, Len(baseString) - startindex)
+End Function
+
+
+
+
 Public Function IsNull(ByVal searchString As String) As Boolean
     IsNull = searchString = vbNullString
 End Function
@@ -255,6 +291,33 @@ Public Function IsNullOrWhiteSpace(ByVal searchString As String) As Boolean
     'equivalent to: return String.IsNullOrEmpty(value) || value.Trim().Length == 0;
     IsNullOrWhiteSpace = False
 End Function
+
+
+
+Public Function Join(ByVal delimiter As String, ByRef stringsToJoin() As String) As String
+    Join = VBA.Join(stringsToJoin, delimiter)
+End Function
+
+
+Public Function JoinBetween(ByVal delimiter As String, ByRef stringsToJoin() As String, ByVal startindex As Long, ByVal count As Long) As String
+    If startindex < 0 Then
+        Err.Raise 9, "Strings.JoinBetween", "Invalid startIndex"
+    ElseIf count < 0 Then
+        Err.Raise 5, "Strings.JoinBetween", "Invalid count"
+    ElseIf count = 0 Then
+        Exit Function
+    End If
+    
+    Dim subset() As String
+    ReDim subset(0 To count - 1) As String
+    Dim idx As Long
+    For idx = 0 To count - 1
+        subset(idx) = stringsToJoin(idx + startindex)
+    Next idx
+    
+    JoinBetween = strings.Join(delimiter, subset)
+End Function
+
 
 
 
@@ -279,23 +342,23 @@ End Function
 
 
 
-Public Function LastIndexOfBetween(ByVal searchString As String, ByVal stringToFind As String, ByVal StartIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOfBetween(ByVal searchString As String, ByVal stringToFind As String, ByVal startindex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
     If compare Mod 2 = 1 Then
         searchString = LCase$(searchString)
         stringToFind = LCase$(stringToFind)
     End If
 
     If compare = Binary Or BinaryIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, startindex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
     ElseIf compare = Text Or TextIngnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbTextCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, startindex - Length, Length), stringToFind, -1, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
-        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, startindex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
     Else
-        LastIndexOfBetween = InStrRev(Mid$(searchString, StartIndex - Length, Length), stringToFind, -1) - 1
+        LastIndexOfBetween = InStrRev(Mid$(searchString, startindex - Length, Length), stringToFind, -1) - 1
     End If
     If LastIndexOfBetween > -1 Then
-        LastIndexOfBetween = LastIndexOfBetween + StartIndex - Length - 1
+        LastIndexOfBetween = LastIndexOfBetween + startindex - Length - 1
     End If
 
 End Function
@@ -360,11 +423,8 @@ Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondStr
 
             ' Character is off, offset the matrix by the appropriate number.
             Else
-                Dim min1 As Long
-                min1 = distance(index - 1, innerIndex) + 1
-
-                Dim min2 As Long
-                min2 = distance(index, innerIndex - 1) + 1
+                Dim min1 As Long: min1 = distance(index - 1, innerIndex) + 1
+                Dim min2 As Long: min2 = distance(index, innerIndex - 1) + 1
 
                 If min2 < min1 Then
                     min1 = min2
@@ -375,7 +435,6 @@ Public Function LevenshteinDistance(ByVal firstString As String, ByVal secondStr
                     min1 = min2
                 End If
                 distance(index, innerIndex) = min1
-
             End If
         Next
     Next
@@ -403,8 +462,78 @@ End Function
 
 
 
-Public Function Right(ByVal stringToParse As String, ByVal count As Long) As String
-    Right = VBA.Right$(stringToParse, count)
+
+Public Function PadLeft(ByVal baseString As String, ByVal totalWidth As Long, Optional ByVal paddingChar As String = " ") As String
+    If Len(paddingChar) > 1 Then
+        Err.Raise 9, "Strings.PadLeft", "Padding character can only be one character in length"
+    ElseIf paddingChar = vbNullString Then
+        Err.Raise 9, "Strings.PadLeft", "Padding character cannot be null"
+    End If
+    
+    PadLeft = VBA.String$(totalWidth - Len(baseString), paddingChar) & baseString
+End Function
+
+
+
+
+Public Function PadRight(ByVal baseString As String, ByVal totalWidth As Long, Optional ByVal paddingChar As String = " ") As String
+    If Len(paddingChar) > 1 Then
+        Err.Raise 9, "Strings.PadRight", "Padding character can only be one character in length"
+    ElseIf paddingChar = vbNullString Then
+        Err.Raise 9, "Strings.PadRight", "Padding character cannot be null"
+    End If
+    
+    PadRight = baseString & VBA.String$(totalWidth - Len(baseString), paddingChar)
+End Function
+
+
+
+
+Public Function Remove(ByVal baseString As String, ByVal startindex As Long, Optional ByVal count = 0) As String
+    If startindex < 0 Then
+        Err.Raise 9, "Strings.Remove", "Start index must be greater than 0"
+    ElseIf count < 0 Then
+        Err.Raise 9, "Strings.Remove", "Count must be greater than 0"
+    End If
+    
+    If count = 0 Then
+        Remove = strings.Left(baseString, count)
+    Else
+        Remove = strings.Left(baseString, Len(baseString) - startindex)
+    End If
+End Function
+
+
+
+Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As Comparison = Comparison.Default)
+    If oldString = vbNullString Then
+        Err.Raise 9, "Strings.Replace", "String to replace cannot be null"
+    End If
+    
+    If compare Mod 2 = 1 Then
+        searchString = LCase$(searchString)
+        stringToFind = LCase$(stringToFind)
+    End If
+
+    If compare = Binary Or BinaryIgnoreCase Then
+        Replace = VBA.Replace(baseString, oldString, newString, , , vbBinaryCompare)
+    ElseIf compare = Text Or TextIngnoreCase Then
+        Replace = VBA.Replace(baseString, oldString, newString, , , vbTextCompare)
+    ElseIf compare = Database Or DatabaseIgnoreCase Then
+        Replace = VBA.Replace(baseString, oldString, newString, , , vbDatabaseCompare)
+    Else
+        Replace = VBA.Replace(baseString, oldString, newString)
+    End If
+    
+End Function
+
+
+
+
+
+
+Public Function Right(ByVal baseString As String, ByVal startindex As Long) As String
+    Right = VBA.Right$(baseString, count)
 End Function
 
 
@@ -437,10 +566,10 @@ End Function
 
 
 
-Public Function SubstringBetween(ByVal stringToCut As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal StartIndex As Long = 0) As String
-    Dim startPos As Long: startPos = Strings.IndexOf(stringToCut, firstString, StartIndex) + Strings.Length(firstString)
-    Dim endPos As Long: endPos = Strings.IndexOf(stringToCut, secondString, startPos)
-    SubstringBetween = Strings.Substring(stringToCut, startPos, endPos - startPos)
+Public Function SubstringBetween(ByVal stringToCut As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal startindex As Long = 0) As String
+    Dim startPos As Long: startPos = strings.IndexOf(stringToCut, firstString, startindex) + strings.Length(firstString)
+    Dim endPos As Long: endPos = strings.IndexOf(stringToCut, secondString, startPos)
+    SubstringBetween = strings.Substring(stringToCut, startPos, endPos - startPos)
 End Function
 
 
@@ -484,13 +613,36 @@ End Function
 
 
 Public Function ReplaceNewLineChars(ByVal baseString As String, Optional ByVal replacement As String = " ") As String
-    ReplaceNewLineChars = Replace$(baseString, vbCrLf, replacement)
-    ReplaceNewLineChars = Replace$(ReplaceNewLineChars, vbCr, replacement)
-    ReplaceNewLineChars = Replace$(ReplaceNewLineChars, vbLf, replacement)
+    ReplaceNewLineChars = VBA.Replace$(baseString, vbCrLf, replacement)
+    ReplaceNewLineChars = VBA.Replace$(ReplaceNewLineChars, vbCr, replacement)
+    ReplaceNewLineChars = VBA.Replace$(ReplaceNewLineChars, vbLf, replacement)
 End Function
 
 
+Public Function Split(ByVal baseString As String, ParamArray delimiters() As Variant) As String()
+    Dim delims() As String
+    strings.ToStringArray delims, delimiters 'TODO - bug here
+    
+    Dim result() As String
+    ReDim result(0 To Len(baseString * 2)) 'worse case scenario?
+    
+    Dim pos As Long
+    Dim startPos As Long
+    Dim outIdx As Long
+    Dim idx As Long
+    For idx = 0 To UBound(result)
+        startPos = pos
+        pos = strings.IndexOfAny(searchString, delims, pos)
+        result(idx) = strings.Substring(baseString, startPos, pos - startPos)
+    Next idx
+End Function
 
+Sub test()
+    Dim base As String: base = "aa-bb-cc"
+    Dim chars As String: chars = "-"
+    Dim out() As String
+    out = strings.Split(base, chars)
+End Sub
 
 
 
@@ -504,6 +656,24 @@ Public Function ToCharArray(ByVal stringToSplit As String, Optional ByVal source
     Loop While idx < count
     ToCharArray = chars
 End Function
+
+
+Public Function ToStringArray(ByRef outputArray() As String, ByRef inputArray() As Variant) As String()
+    ReDim outputArray(LBound(inputArray) To UBound(inputArray))
+    Dim idx
+    On Error GoTo ErrorCannotConvertToString:
+    For idx = 0 To UBound(outputArray)
+        outputArray(idx) = CStr(inputArray(idx))
+        idx2 = idx2 + 1
+    Next idx
+    On Error GoTo 0
+    Exit Function
+    
+ErrorCannotConvertToString:
+    Err.Raise 13, "Strings.ToStringArray", "Cannot convert element at "
+    On Error GoTo 0
+End Function
+
 
 
 
@@ -548,4 +718,35 @@ Public Function Truncate(ByRef source As String, ByVal maxLength As Long) As Str
     Const extention As String = "..."
     source = Left(source, maxLength - Len(extention)) & extention
     Truncate = source
+End Function
+
+'from https://stackoverflow.com/a/218199/10802255
+Public Function URLEncode(stringToEncode As String, Optional spaceAsPlus As Boolean = False) As String
+    Dim stringLen As Long: stringLen = Len(stringToEncode)
+
+    If stringLen > 0 Then
+        ReDim result(stringLen) As String
+        Dim i As Long
+        Dim charCode As Integer
+        Dim char As String
+        Dim space As String
+
+        If spaceAsPlus Then space = "+" Else space = "%20"
+
+        For i = 1 To stringLen
+            char = Mid$(stringToEncode, i, 1)
+            charCode = Asc(char)
+            Select Case charCode
+            Case 97 To 122, 65 To 90, 48 To 57, 45, 46, 95, 126
+                result(i) = char
+            Case 32
+                result(i) = space
+            Case 0 To 15
+                result(i) = "%0" & Hex$(charCode)
+            Case Else
+                result(i) = "%" & Hex$(charCode)
+            End Select
+        Next i
+        URLEncode = Join(result, "")
+    End If
 End Function
