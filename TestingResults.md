@@ -9,7 +9,7 @@ The following implementations were tested
 
 **All times are in miliseconds and represent the average of 30 repetitions.**
 
-## Results
+## My Results
 
 The first append test involved appending a single character to the end of the string using the library's append or concatenation function. 
 | Iterations | Default | clsStringBuilder | StringChunker | StringBuffer | StringBuilder |
@@ -28,3 +28,6 @@ An additional test was performed to better simulate real word use by appending a
 | 10<sup>4</sup> | 81    | 32   | 25   | 21   | 22   |
 | 10<sup>5</sup> | 31259 | 322  | 249  | 216  | 241  |
 | 10<sup>6</sup> | N/A   | 3345 | 2551 | 2222 | 2386 |
+
+## Further Reading
+For more information on why the performance of the StringBuilder classes far outperform regular concatenation, refer to the following articles on the *Desktop Liberation* blog [here](https://ramblings.mcpher.com/optimization-links/strings-and-garbage/) and [here](https://ramblings.mcpher.com/strings-and-garbage-collector-in-vba/). 
