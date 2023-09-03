@@ -58,7 +58,7 @@ Private pMaxCapacity As Long
 'Returns the capacity of the string i.e. total length of buffer
 '===============================================================================
 Public Property Get CurrentCapacity() As Long
-    Capacity = pBuffer.capacity_
+    CurrentCapacity = pBuffer.capacity_
 End Property
 
 '===============================================================================
@@ -165,6 +165,43 @@ Public Sub Clear()
 End Sub
 
 
+Public Function Contains(ByVal stringToFind As String, Optional ByVal compare As Comparison = 0) As Boolean
+    Contains = IndexOf(Me.ToString, stringToFind, , compare) >= 0
+End Function
+
+
+Public Function ContainsAfter(ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    ContainsAfter = IndexOf(Me.ToString, stringToFind, startIndex, compare) >= 0
+End Function
+
+
+Public Function ContainsBefore(ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    Dim newString As String: newString = Left(Me.ToString, endIndex)
+    ContainsBefore = IndexOf(newString, stringToFind, , compare) >= 0
+End Function
+
+
+Public Function ContainsAny(ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    Dim searchString As String: searchString = Me.ToString
+    Dim idx As Long
+    For idx = 0 To UBound(stringsToFind)
+        ContainsAny = IndexOf(searchString, stringsToFind(idx), startIndex, compare) >= 0
+        If ContainsAny Then Exit Function
+    Next idx
+End Function
+
+
+Public Function CountSubstring(ByVal substringToFind As String, Optional ByVal compare As Comparison = 0) As Long
+    Dim baseString As String: baseString = Me.ToString
+    Dim locn As Long: locn = IndexOf(baseString, substringToFind, locn)
+
+    Do While locn >= 0
+        locn = IndexOf(baseString, substringToFind, locn + 1, compare)
+        CountSubstring = CountSubstring + 1
+    Loop
+End Function
+
+
 
 '0-based index
 Public Function IndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
@@ -202,7 +239,6 @@ Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Option
         textToInsert = strings.Replace(VBA.String(repetitions, " "), " ", textToInsert)
     End If
     
-    
     Dim addedLength As Long: addedLength = VBA.Len(textToInsert)
     If addedLength = 0 Then Exit Sub 'Nothing to insert
     Dim newEndIndex As Long: newEndIndex = pBuffer.endIndex_ + addedLength
@@ -223,6 +259,41 @@ Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Option
     'Update last character position
     pBuffer.endIndex_ = newEndIndex
 End Sub
+
+
+
+Public Sub Interpolate(ParamArray args() As Variant)
+    Dim argCount As Long: argCount = UBound(args) - LBound(args) + 1
+    If (argCount) Mod 2 <> 0 Then
+        Err.Raise 5, TypeName(Me) & ".Interpolate", "Invalid number of parameters. The interpolation parameters must be provided in pairs."
+    End If
+    
+    Dim argIdx As Long
+    On Error GoTo InterpolateInvalidArg
+    For argIdx = 0 To argCount - 2 Step 2 '
+        Me.Replace "{" & CStr(args(argIdx)) & "}", CStr(args(argIdx + 1))
+    Next argIdx
+    On Error GoTo 0
+    Exit Sub
+    
+InterpolateInvalidArg:
+    Err.Raise 5, TypeName(Me) & ".Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Sub
+
+
+Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionary)
+    Dim argIdx As Long
+    Dim key As Variant
+    On Error GoTo Interpolate2InvalidArg
+    For Each key In args.Keys()
+        Me.Replace "{" & CStr(key) & "}", CStr(args(key))
+    Next key
+    On Error GoTo 0
+    Exit Function
+    
+Interpolate2InvalidArg:
+    Err.Raise 5, TypeName(Me) & ".Interpolate2", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
 
 
 Public Function LastIndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
@@ -277,6 +348,47 @@ Public Sub Remove(ByVal startIndex As Long, ByVal count As Long)
     
     'Update last character position
     pBuffer.endIndex_ = pBuffer.endIndex_ - count
+End Sub
+
+
+Public Sub RemoveFromEnd(ByVal count As Long)
+    If count < 0 Or count > pBuffer.endIndex_ Then
+        Err.Raise 5, TypeName(Me) & ".RemoveFromEnd", "Invalid count"
+    ElseIf count = 0 Then
+        Exit Sub 'Nothing to delete
+    End If
+    
+    pBuffer.endIndex_ = pBuffer.endIndex_ - count
+End Sub
+
+
+Public Sub RemoveFromEndWhile(ByVal stringToRemove As String)
+    If stringToRemove = vbNullString Or Len(stringToRemove) = 0 Then
+        Err.Raise 9, TypeName(Me) & ".RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
+    End If
+    
+    Dim charCount As Long: charCount = Len(stringToRemove)
+    
+    Do While Me.Substring(pBuffer.endIndex_ - charCount, charCount) = stringToRemove
+        pBuffer.endIndex_ = pBuffer.endIndex_ - charCount
+    Loop
+End Sub
+
+
+
+Public Sub RemoveNonPrintableChars()
+    'Does not remove new line characters
+    Dim idx As Long
+    Dim c As Long
+    Dim currentCharCode As Long
+
+    RemoveNonPrintableChars = String$(Len(baseString), Chr$(0))
+    For idx = 0 To pBuffer.endIndex_
+        currentCharCode = AscW(Mid$(pBuffer.text_, idx + 1, 1)) And &HFFFF& 'Strings.AscW2
+        If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
+            Me.Remove idx, 1
+        End If
+    Next idx
 End Sub
 
 
@@ -347,6 +459,21 @@ End Sub
 
 
 
+
+
+Public Sub ReplaceNewLineChars(Optional ByVal replacement As String = " ")
+    Me.Replace vbCrLf, replacement
+    Me.Replace vbCr, replacement
+    Me.Replace vbLf, replacement
+End Sub
+
+
+
+Public Sub ReplaceNonBreakingSpaces()
+    Me.Replace Chr$(160), " "
+End Sub
+
+
 '****************************************************************************************************************************************************
 'Reverses the contained string
 '****************************************************************************************************************************************************
@@ -381,6 +508,14 @@ Public Function Substring(ByVal startIndex As Long, ByVal Length As Long) As Str
     End If
     
     Substring = VBA.Mid$(pBuffer.text_, startIndex + 1, usedLength)
+End Function
+
+
+
+Public Function SubstringBetween(ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
+    Dim startPos As Long: startPos = Me.IndexOf(firstString, startIndex) + Len(firstString)
+    Dim endPos As Long: endPos = Me.IndexOf(secondString, startPos)
+    SubstringBetween = Me.Substring(startPos, endPos - startPos)
 End Function
 
 

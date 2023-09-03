@@ -33,6 +33,10 @@ End Enum
 
 
 'TODO - easy way to convert between array and collection to make the _Any functions more flexible?
+
+
+
+
 'AscW Fix
 'The AscW function in the built-in VBA.Strings module has a problem where it returns the correct bit pattern for an unsigned 16-bit integer which is
 'incorrect in VBA because VBA uses signed 16-bit integer. Thus, after reaching 32767 AscW will start returning negative numbers. To work around this
@@ -42,20 +46,79 @@ Public Function AscW2(ByVal Char As String) As Long
     AscW2 = AscW(Char) And &HFFFF&
 End Function
 
+
+Public Function Append(ByVal baseString As String, ParamArray args() As Variant) As String
+    Append = baseString
+    Dim argIdx As Long
+    On Error GoTo AppendInvalidArg
+    For argIdx = 0 To UBound(args)
+        Append = Append & args(argIdx)
+    Next argIdx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "Strings.Append", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
+
+Public Function Append2(ByVal baseString As String, ByVal args As Collection) As String
+    Append = baseString
+    Dim argIdx As Long
+    On Error GoTo AppendInvalidArg
+    For argIdx = 0 To args.count
+        Append = Append & args(argIdx)
+    Next argIdx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "Strings.Append", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
+
+
+Public Function AppendLine(ByVal baseString As String, ParamArray args() As Variant) As String
+    Append = baseString
+    Dim argIdx As Long
+    On Error GoTo AppendInvalidArg
+    For argIdx = 0 To UBound(args)
+        Append = Append & Chr$(10) & args(argIdx)
+    Next argIdx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "Strings.Append", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
+
+Public Function AppendLine2(ByVal baseString As String, ByVal args As Collection) As String
+    Append = baseString
+    Dim argIdx As Long
+    On Error GoTo AppendInvalidArg
+    For argIdx = 0 To args.count
+        Append = Append & Chr$(10) & args(argIdx)
+    Next argIdx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "Strings.Append", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
+
+
 'https://stackoverflow.com/questions/4805475/assignment-of-objects-in-vb6/4805812#4805812
 'Public Function Clone(ByRef baseString As String) As String
 '    Clone = baseString
 'End Function
 
 
-Public Function chars(ByVal stringToParse As String, ByVal index As Long) As String
-    chars = Mid$(stringToParse, index, 1)
+Public Function Char(ByVal baseString As String, ByVal index As Long) As String
+    Char = Mid$(baseString, index, 1)
 End Function
 
 
 
-Public Function Clean(ByVal textToClean As String, Optional ByVal nonPrintable As Boolean = True, Optional ByVal newLines As Boolean = True, Optional ByVal nonBreaking As Boolean = True, Optional ByVal trimString As Boolean = True, Optional ByVal newLineReplacement As String = " ") As String
-    Clean = textToClean
+Public Function Clean(ByVal baseString As String, Optional ByVal nonPrintable As Boolean = True, Optional ByVal newLines As Boolean = True, Optional ByVal nonBreaking As Boolean = True, Optional ByVal trimString As Boolean = True, Optional ByVal newLineReplacement As String = " ") As String
+    Clean = baseString
     If nonPrintable Then Clean = strings.RemoveNonPrintableChars(Clean)
     If newLines Then Clean = strings.ReplaceNewLineChars(Clean, newLineReplacement)
     If nonBreaking Then Clean = strings.ReplaceNonBreakingSpaces(Clean)
@@ -63,9 +126,15 @@ Public Function Clean(ByVal textToClean As String, Optional ByVal nonPrintable A
 End Function
 
 
+Public Function Clear(ByVal baseString As String)
+    Clear = vbNullString
+End Function
+
+
 
 
 'nullstring, null
+'Returns the first non null parameter
 Public Function Coalesce(ParamArray params() As Variant) As String
     Dim idx As Long
     Dim currentParam As Variant
@@ -109,8 +178,8 @@ End Function
 
 
 
-Public Function ContainsBefore(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal EndIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
-    Dim newString As String: newString = Left(searchString, EndIndex)
+Public Function ContainsBefore(ByVal searchString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+    Dim newString As String: newString = Left(searchString, endIndex)
     ContainsBefore = IndexOf(newString, stringToFind, , compare) >= 0
 End Function
 
@@ -130,10 +199,10 @@ End Function
 
 
 '@Ignore ProcedureCanBeWrittenAsFunction
-Public Sub CopyToCharArray(ByVal stringToCopy As String, ByRef chars() As String)
+Public Sub CopyToCharArray(ByVal stringToCopy As String, ByRef Chars() As String)
     Dim idx As Long
     For idx = 1 To Len(stringToCopy)
-        chars(idx - 1) = Mid$(stringToCopy, idx, 1)
+        Chars(idx - 1) = Mid$(stringToCopy, idx, 1)
     Next idx
 End Sub
 
@@ -141,10 +210,10 @@ End Sub
 
 'public void CopyTo (int sourceIndex, char[] destination, int destinationIndex, int count);
 '@Ignore ProcedureCanBeWrittenAsFunction
-Public Sub CopyToCharArrayFrom(ByVal stringToCopy As String, ByVal sourceIndex As Long, ByRef chars() As String, ByVal destinationIndex As Long, ByVal count As Long)
+Public Sub CopyToCharArrayFrom(ByVal stringToCopy As String, ByVal sourceIndex As Long, ByRef Chars() As String, ByVal destinationIndex As Long, ByVal count As Long)
     Dim idx As Long
     Do
-        chars(destinationIndex + idx) = Mid$(stringToCopy, sourceIndex + idx + 1, 1)
+        Chars(destinationIndex + idx) = Mid$(stringToCopy, sourceIndex + idx + 1, 1)
         idx = idx + 1
     Loop While idx < count
 End Sub
@@ -274,6 +343,49 @@ End Function
 
 Public Function Insert(ByVal baseString As String, ByVal startIndex As Long, ByVal stringToInsert As String) As String
     Insert = Left$(baseString, startIndex) & stringToInsert & Right$(baseString, Len(baseString) - startIndex)
+End Function
+
+
+
+Public Function Interpolate(ByVal baseString As String, ParamArray args() As Variant) As String
+    Dim argCount As Long: argCount = UBound(args) - LBound(args) + 1
+    If baseString = vbNullString Then
+        Err.Raise 5, "Strings.Interpolate", "Base string cannot be null."
+    ElseIf (argCount) Mod 2 <> 0 Then
+        Err.Raise 5, "Strings.Interpolate", "Invalid number of parameters. The interpolation parameters must be provided in pairs."
+    End If
+    
+    Dim argIdx As Long
+    Interpolate = baseString
+    On Error GoTo InterpolateInvalidArg
+    For argIdx = 0 To argCount - 2 Step 2 '
+        Interpolate = strings.Replace(Interpolate, "{" & CStr(args(argIdx)) & "}", CStr(args(argIdx + 1)))
+    Next argIdx
+    On Error GoTo 0
+    Exit Function
+    
+InterpolateInvalidArg:
+    Err.Raise 5, "Strings.Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+End Function
+
+
+Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionary)
+    If baseString = vbNullString Then
+        Err.Raise 5, "Strings.Interpolate", "Base string cannot be null."
+    End If
+    
+    Dim argIdx As Long
+    Interpolate2 = baseString
+    Dim key As Variant
+    On Error GoTo Interpolate2InvalidArg
+    For Each key In args.Keys()
+        Interpolate2 = strings.Replace(Interpolate2, "{" & CStr(key) & "}", CStr(args(key)))
+    Next key
+    On Error GoTo 0
+    Exit Function
+    
+Interpolate2InvalidArg:
+    Err.Raise 5, "Strings.Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
 End Function
 
 
@@ -461,6 +573,19 @@ End Function
 
 
 
+Public Function Overwrite(ByVal baseString As String, ByVal startIndex As Long, ByVal replacementText As String)
+    'Validate Input
+    If startIndex < 0 Then
+        Err.Raise 9, "Strings.Overwrite", "Start index cannot be less than zero."
+    ElseIf startIndex > Len(baseString) < 0 Then
+        Err.Raise 5, "Strings.Overwrite", "Start index cannot be longer than the length of the base string."
+    End If
+    
+    Overwrite = Left(baseString, startIndex) & replacementText & Right(baseString, Len(baseString) - Len(replacementText))
+End Function
+
+
+
 
 Public Function PadLeft(ByVal baseString As String, ByVal totalWidth As Long, Optional ByVal paddingChar As String = " ") As String
     If Len(paddingChar) > 1 Then
@@ -504,6 +629,40 @@ End Function
 
 
 
+Public Function RemoveFromEndWhile(ByVal baseString As String, ByVal stringToRemove As String)
+    If stringToRemove = vbNullString Or Len(stringToRemove) = 0 Then
+        Err.Raise 9, "Strings.RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
+    End If
+    
+    Dim charCount As Long: charCount = Len(stringToRemove)
+    RemoveFromEndWhile = baseString
+    
+    Do While strings.Right(RemoveFromEndWhile, charCount) = stringToRemove
+        RemoveFromEndWhile = strings.Left(baseString, Len(RemoveFromEndWhile) - charCount)
+    Loop
+End Function
+
+
+
+Public Function RemoveNonPrintableChars(ByVal baseString As String) As String
+    'Does not remove new line characters
+    Dim idx As Long
+    Dim c As Long
+    Dim currentCharCode As Long
+
+    RemoveNonPrintableChars = String$(Len(baseString), Chr$(0))
+    For idx = 1 To Len(Text)
+        currentCharCode = AscW2(Mid$(baseString, idx, 1))
+        If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
+            c = c + 1
+            Mid$(RemoveNonPrintableChars, c, 1) = Mid$(baseString, idx, 1)
+        End If
+    Next idx
+    RemoveNonPrintableChars = Left$(RemoveNonPrintableChars, c)
+End Function
+
+
+
 Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As Comparison = Comparison.Default)
     If oldString = vbNullString Then
         Err.Raise 9, "Strings.Replace", "String to replace cannot be null"
@@ -531,7 +690,7 @@ End Function
 
 
 
-Public Function Right(ByVal baseString As String, ByVal startIndex As Long) As String
+Public Function Right(ByVal baseString As String, ByVal count As Long) As String
     Right = VBA.Right$(baseString, count)
 End Function
 
@@ -583,22 +742,8 @@ Public Function Substring(ByVal stringToCut As String, ByVal atPosition As Long,
 End Function
 
 
-
-Public Function RemoveNonPrintableChars(ByVal baseString As String) As String
-    'Does not remove new line characters
-    Dim idx As Long
-    Dim c As Long
-    Dim currentCharCode As Long
-
-    RemoveNonPrintableChars = String$(Len(Text), Chr$(0))
-    For idx = 1 To Len(Text)
-        currentCharCode = AscW2(Mid$(Text, idx, 1))
-        If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
-            c = c + 1
-            Mid$(RemoveNonPrintableChars, c, 1) = Mid$(Text, idx, 1)
-        End If
-    Next idx
-    RemoveNonPrintableChars = Left$(RemoveNonPrintableChars, c)
+Public Function Reverse(ByVal baseString As String)
+    Reverse = VBA.StrReverse$(baseString)
 End Function
 
 
@@ -639,14 +784,14 @@ End Function
 
 
 Public Function ToCharArray(ByVal stringToSplit As String, Optional ByVal sourceIndex As Long, Optional ByVal count As Long) As String()
-    Dim chars() As String
-    ReDim chars(0 To Len(stringToSplit)) As String
+    Dim Chars() As String
+    ReDim Chars(0 To Len(stringToSplit)) As String
     Dim idx As Long
     Do
-        chars(sourceIndex + idx) = Mid$(stringToSplit, sourceIndex + idx + 1, 1)
+        Chars(sourceIndex + idx) = Mid$(stringToSplit, sourceIndex + idx + 1, 1)
         idx = idx + 1
     Loop While idx < count
-    ToCharArray = chars
+    ToCharArray = Chars
 End Function
 
 
@@ -696,18 +841,17 @@ End Function
 
 
 '/**
-' * Create a max lenght of string and return it with extension.
+' * Create a max length of string and return it with extension.
 ' *
 ' * @author Robert Todar <robert@roberttodar.com>
 ' * @example Truncate("This is a long sentence", 10)  -> "This is..."
 ' */
-Public Function Truncate(ByRef source As String, ByVal maxLength As Long) As String
+Public Function Truncate(ByRef source As String, ByVal maxLength As Long, Optional ByVal extension = "...") As String
     If Len(source) <= maxLength Then
         Truncate = source
         Exit Function
     End If
 
-    Const extention As String = "..."
     source = Left(source, maxLength - Len(extention)) & extention
     Truncate = source
 End Function
