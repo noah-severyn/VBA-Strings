@@ -1,5 +1,5 @@
 # .NET StringBuilder Functions
-The following table outlines all of the functions in the .NET [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
+The following table outlines all of the constructors, properties, fields, and functions in the .NET [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
 
 | Constructor | Description | `Stringbuilder.cls` Name |
 | :---------- | :---------- | :----------------------- |

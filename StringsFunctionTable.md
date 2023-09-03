@@ -1,8 +1,29 @@
 # .NET String Functions
-The following table outlines all of the functions in the .NET [String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
+The following table outlines all of the constructors, properties, fields, and functions in the .NET [String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
 
-| Function Name | Description | `Strings.bas` Name | `Stringbuilder.cls` Name |
-| :------------ | :---------- | :----------------- | :----------------------- |
+| Constructor | Description | `Stringbuilder.cls` Name |
+| :---------- | :---------- | :----------------------- |
+| String(Char*)  | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters. | ❌ |
+| String(Char*, Int32, Int32)  | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters, a starting character position within that array, and a length. | ❌ |
+| String(Char, Int32) | Initializes a new instance of the String class to the value indicated by a specified Unicode character repeated a specified number of times. | ❌ |
+| String(Char[]) | Initializes a new instance of the String class to the Unicode characters indicated in the specified character array. | ❌ |
+| String(Char[], Int32, Int32) | Initializes a new instance of the String class to the value indicated by an array of Unicode characters, a starting character position within that array, and a length. | ❌ |
+| String(ReadOnlySpan\<Char>) | Initializes a new instance of the String class to the Unicode characters indicated in the specified read-only span. | ❌ |
+| String(SByte*) | Initializes a new instance of the String class to the value indicated by a pointer to an array of 8-bit signed integers. | ❌ |
+| String(SByte*, Int32, Int32) | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, and a length. | ❌ |
+| String(SByte*, Int32, Int32, Encoding) | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, a length, and an Encoding object. | ❌ |
+
+| Property Name | Description | `Stringbuilder.cls` Name |
+| :------------ | :---------- | :----------------------- |
+| Chars[Int32]  | Gets the Char object at a specified position in the current String object. | Char |
+| Length  | GGets the number of characters in the current String object. | Length |
+
+| Field Name | Description | `Stringbuilder.cls` Name |
+| :--------- | :---------- | :----------------------- |
+| Empty  | Represents the empty string. This field is read-only. | EmptyString |
+
+| Function Name | Description | `Stringbuilder.cls` Name |
+| :------------ | :---------- | :----------------------- |
 | Clone()  | Returns a reference to this instance of String. | ❌ | ❌|
 | Compare(String, Int32, String, Int32, Int32)  | Compares substrings of two specified String objects and returns an integer that indicates their relative position in the sort order. | ❌ | ❌|
 | Compare(String, Int32, String, Int32, Int32, Boolean)  | Compares substrings of two specified String objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order. | ❌ | ❌|
@@ -23,9 +44,9 @@ The following table outlines all of the functions in the .NET [String](https://l
 | Concat(Object, Object)  | Concatenates the string representations of two specified objects. | Concat | Append|
 | Concat(Object, Object, Object)  | Concatenates the string representations of three specified objects. | Concat | Append|
 | Concat(Object[])  | Concatenates the string representations of the elements in a specified Object array. | Concat | AppendMultiple|
-| Concat(ReadOnlySpan<Char>, ReadOnlySpan<Char>)  | Concatenates the string representations of two specified read-only character spans. | Concat | AppendMultiple|
-| Concat(ReadOnlySpan<Char>, ReadOnlySpan<Char>, ReadOnlySpan<Char>)  | Concatenates the string representations of three specified read-only character spans. | Concat | AppendMultiple|
-| Concat(ReadOnlySpan<Char>, ReadOnlySpan<Char>, ReadOnlySpan<Char>, ReadOnlySpan<Char>)  | Concatenates the string representations of four specified read-only character spans. | Concat | AppendMultiple|
+| Concat(ReadOnlySpan\<Char>, ReadOnlySpan\<Char>)  | Concatenates the string representations of two specified read-only character spans. | Concat | AppendMultiple|
+| Concat(ReadOnlySpan\<Char>, ReadOnlySpan\<Char>, ReadOnlySpan\<Char>)  | Concatenates the string representations of three specified read-only character spans. | Concat | AppendMultiple|
+| Concat(ReadOnlySpan\<Char>, ReadOnlySpan\<Char>, ReadOnlySpan\<Char>, ReadOnlySpan\<Char>)  | Concatenates the string representations of four specified read-only character spans. | Concat | AppendMultiple|
 | Concat(String, String)  | Concatenates two specified instances of String. | Concat | AppendMultiple|
 | Concat(String, String, String)  | Concatenates three specified instances of String. | Concat | AppendMultiple|
 | Concat(String, String, String, String)  | Concatenates four specified instances of String. | Concat | AppendMultiple|
@@ -36,9 +57,9 @@ The following table outlines all of the functions in the .NET [String](https://l
 | Contains(String)  | Returns a value indicating whether a specified substring occurs within this string. | Contains | |
 | Contains(String, StringComparison)  | Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules. | Contains | |
 | CopyTo(Int32, Char[], Int32, Int32)  | Copies a specified number of characters from a specified position in this instance to a specified position in an array of Unicode characters. | CopyToCharArrayFrom | |
-| CopyTo(Span<Char>)  | Copies the contents of this string into the destination span. | CopyToCharArray | |
+| CopyTo(Span\<Char>)  | Copies the contents of this string into the destination span. | CopyToCharArray | |
 | Create(IFormatProvider, DefaultInterpolatedStringHandler)  | Creates a new string by using the specified provider to control the formatting of the specified interpolated string. | ❌ | ❌|
-| Create(IFormatProvider, Span<Char>, DefaultInterpolatedStringHandler)  | Creates a new string by using the specified provider to control the formatting of the specified interpolated string. | ❌ | ❌|
+| Create(IFormatProvider, Span\<Char>, DefaultInterpolatedStringHandler)  | Creates a new string by using the specified provider to control the formatting of the specified interpolated string. | ❌ | ❌|
 | Create<TState>(Int32, TState, SpanAction<Char,TState>)  | Creates a new string with a specific length and initializes it after creation by using the specified callback. | Create | |
 | EndsWith(Char)  | Determines whether the end of this string instance matches the specified character. | EndsWith | |
 | EndsWith(String)  | Determines whether the end of this string instance matches the specified string. | EndsWith | |
@@ -60,8 +81,8 @@ The following table outlines all of the functions in the .NET [String](https://l
 | Format(String, Object[])  | Replaces the format item in a specified string with the string representation of a corresponding object in a specified array. |  | |
 | GetEnumerator()  | Retrieves an object that can iterate through the individual characters in this string. | ❌ | ❌|
 | GetHashCode()  | Returns the hash code for this string. | ❌ | ❌|
-| GetHashCode(ReadOnlySpan<Char>)  | Returns the hash code for the provided read-only character span. | ❌ | ❌|
-| GetHashCode(ReadOnlySpan<Char>, StringComparison)  | Returns the hash code for the provided read-only character span using the specified rules. | ❌ | ❌|
+| GetHashCode(ReadOnlySpan\<Char>)  | Returns the hash code for the provided read-only character span. | ❌ | ❌|
+| GetHashCode(ReadOnlySpan\<Char>, StringComparison)  | Returns the hash code for the provided read-only character span using the specified rules. | ❌ | ❌|
 | GetHashCode(StringComparison)  | Returns the hash code for this string using the specified rules. | ❌ | ❌|
 | GetType()  | Gets the Type of the current instance. (Inherited from Object) | ❌ | ❌|
 | GetTypeCode()  | Returns the TypeCode for the String class. | GetTypeCode | |
@@ -156,16 +177,4 @@ The following table outlines all of the functions in the .NET [String](https://l
 | TrimStart()  | Removes all the leading white-space characters from the current string. | TrimStart | |
 | TrimStart(Char)  | Removes all the leading occurrences of a specified character from the current string. | TrimStart | |
 | TrimStart(Char[])  | Removes all the leading occurrences of a set of characters specified in an array from the current string. | TrimStart | |
-| TryCopyTo(Span<Char>)  | Copies the contents of this string into the destination span. | ❌ | ❌|
-| Chars[Int32]  | Property: Gets the Char object at a specified position in the current String object. | Char | |
-| Length  | Property: Gets the number of characters in the current String object. | Length | |
-| Empty  | Field: Represents the empty string. This field is read-only. | EmptyString | |
-| String(Char*)  | Constructor: Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters. | ❌ | ❌|
-| String(Char*, Int32, Int32)  | Constructor: Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters, a starting character position within that array, and a length. | ❌ | ❌|
-| String(Char, Int32)  | Constructor: Initializes a new instance of the String class to the value indicated by a specified Unicode character repeated a specified number of times. | ❌ | ❌|
-| String(Char[])  | Constructor: Initializes a new instance of the String class to the Unicode characters indicated in the specified character array. | ❌ | ❌|
-| String(Char[], Int32, Int32)  | Constructor: Initializes a new instance of the String class to the value indicated by an array of Unicode characters, a starting character position within that array, and a length. | ❌ | ❌|
-| String(ReadOnlySpan<Char>)  | Constructor: Initializes a new instance of the String class to the Unicode characters indicated in the specified read-only span. | ❌ | ❌|
-| String(SByte*)  | Constructor: Initializes a new instance of the String class to the value indicated by a pointer to an array of 8-bit signed integers. | ❌ | ❌|
-| String(SByte*, Int32, Int32)  | Constructor: Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, and a length. | ❌ | ❌|
-| String(SByte*, Int32, Int32, Encoding)  | Constructor: Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, a length, and an Encoding object. | ❌ | ❌|
+| TryCopyTo(Span\<Char>)  | Copies the contents of this string into the destination span. | ❌ | ❌|
