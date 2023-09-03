@@ -1,6 +1,7 @@
 # .NET String Functions
 The following table outlines all of the constructors, properties, fields, and functions in the .NET [String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
 
+## Constructors
 | Constructor | Description | `Stringbuilder.cls` Name |
 | :---------- | :---------- | :----------------------- |
 | String(Char*)  | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters. | ❌ |
@@ -13,15 +14,18 @@ The following table outlines all of the constructors, properties, fields, and fu
 | String(SByte*, Int32, Int32) | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, and a length. | ❌ |
 | String(SByte*, Int32, Int32, Encoding) | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, a length, and an Encoding object. | ❌ |
 
+## Properties
 | Property Name | Description | `Stringbuilder.cls` Name |
 | :------------ | :---------- | :----------------------- |
 | Chars[Int32]  | Gets the Char object at a specified position in the current String object. | Char |
 | Length  | GGets the number of characters in the current String object. | Length |
 
+## Fields
 | Field Name | Description | `Stringbuilder.cls` Name |
 | :--------- | :---------- | :----------------------- |
 | Empty  | Represents the empty string. This field is read-only. | EmptyString |
 
+## Functions
 | Function Name | Description | `Stringbuilder.cls` Name |
 | :------------ | :---------- | :----------------------- |
 | Clone()  | Returns a reference to this instance of String. | ❌ | ❌|
@@ -39,7 +43,7 @@ The following table outlines all of the constructors, properties, fields, and fu
 | CompareOrdinal(String, String)  | Compares two specified String objects by evaluating the numeric values of the corresponding Char objects in each string. | ❌ | ❌|
 | CompareTo(Object)  | Compares this instance with a specified Object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified Object. | ❌ | ❌|
 | CompareTo(String)  | Compares this instance with a specified String object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified string. | ❌ | ❌|
-| Concat(IEnumerable<String>)  | Concatenates the members of a constructed IEnumerable<T> collection of type String. | Concat | Append|
+| Concat(IEnumerable\<String>)  | Concatenates the members of a constructed IEnumerable<T> collection of type String. | Concat | Append|
 | Concat(Object)  | Creates the string representation of a specified object. | Concat | Append|
 | Concat(Object, Object)  | Concatenates the string representations of two specified objects. | Concat | Append|
 | Concat(Object, Object, Object)  | Concatenates the string representations of three specified objects. | Concat | Append|
@@ -60,7 +64,7 @@ The following table outlines all of the constructors, properties, fields, and fu
 | CopyTo(Span\<Char>)  | Copies the contents of this string into the destination span. | CopyToCharArray | |
 | Create(IFormatProvider, DefaultInterpolatedStringHandler)  | Creates a new string by using the specified provider to control the formatting of the specified interpolated string. | ❌ | ❌|
 | Create(IFormatProvider, Span\<Char>, DefaultInterpolatedStringHandler)  | Creates a new string by using the specified provider to control the formatting of the specified interpolated string. | ❌ | ❌|
-| Create<TState>(Int32, TState, SpanAction<Char,TState>)  | Creates a new string with a specific length and initializes it after creation by using the specified callback. | Create | |
+| Create\<TState>(Int32, TState, SpanAction\<Char,TState>)  | Creates a new string with a specific length and initializes it after creation by using the specified callback. | Create | |
 | EndsWith(Char)  | Determines whether the end of this string instance matches the specified character. | EndsWith | |
 | EndsWith(String)  | Determines whether the end of this string instance matches the specified string. | EndsWith | |
 | EndsWith(String, Boolean, CultureInfo)  | Determines whether the end of this string instance matches the specified string when compared using the specified culture. | EndsWith | |
@@ -109,12 +113,12 @@ The following table outlines all of the constructors, properties, fields, and fu
 | Join(Char, Object[])  | Concatenates the string representations of an array of objects, using the specified separator between each member. | Join | |
 | Join(Char, String[])  | Concatenates an array of strings, using the specified separator between each member. | Join | |
 | Join(Char, String[], Int32, Int32)  | Concatenates an array of strings, using the specified separator between each member, starting with the element in value located at the startIndex position, and concatenating up to count elements. | JoinBetween | |
-| Join(String, IEnumerable<String>)  | Concatenates the members of a constructed IEnumerable<T> collection of type String, using the specified separator between each member. | Join | |
+| Join(String, IEnumerable\<String>)  | Concatenates the members of a constructed IEnumerable\<T> collection of type String, using the specified separator between each member. | Join | |
 | Join(String, Object[])  | Concatenates the elements of an object array, using the specified separator between each element. | Join | |
 | Join(String, String[])  | Concatenates all the elements of a string array, using the specified separator between each element. | Join | |
 | Join(String, String[], Int32, Int32)  | Concatenates the specified elements of a string array, using the specified separator between each element. | JoinBetween | |
-| Join<T>(Char, IEnumerable<T>)  | Concatenates the members of a collection, using the specified separator between each member. | Join | |
-| Join<T>(String, IEnumerable<T>)  | Concatenates the members of a collection, using the specified separator between each member. | Join | |
+| Join\<T>(Char, IEnumerable\<T>)  | Concatenates the members of a collection, using the specified separator between each member. | Join | |
+| Join\<T>(String, IEnumerable\<T>)  | Concatenates the members of a collection, using the specified separator between each member. | Join | |
 | LastIndexOf(Char)  | Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance. | LastIndexOf | |
 | LastIndexOf(Char, Int32)  | Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string. | LastIndexOf | |
 | LastIndexOf(Char, Int32, Int32)  | Reports the zero-based index position of the last occurrence of the specified Unicode character in a substring within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions. | LastIndexOfBetween | |

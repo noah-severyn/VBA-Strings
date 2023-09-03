@@ -1,6 +1,7 @@
 # .NET StringBuilder Functions
 The following table outlines all of the constructors, properties, fields, and functions in the .NET [StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
 
+## Constructors
 | Constructor | Description | `Stringbuilder.cls` Name |
 | :---------- | :---------- | :----------------------- |
 | StringBuilder()  | Initializes a new instance of the StringBuilder class. | ❌ |
@@ -10,6 +11,7 @@ The following table outlines all of the constructors, properties, fields, and fu
 | StringBuilder(String, Int32)  | Initializes a new instance of the StringBuilder class using the specified string and capacity. | ❌ |
 | StringBuilder(String, Int32, Int32, Int32)  | Initializes a new instance of the StringBuilder class from the specified substring and capacity. | ❌ |
 
+## Properties
 | Property Name | Description | `Stringbuilder.cls` Name |
 | :------------ | :---------- | :----------------------- |
 | Capacity  | Gets or sets the maximum number of characters that can be contained in the memory allocated by the current instance. | Capacity |
@@ -17,7 +19,8 @@ The following table outlines all of the constructors, properties, fields, and fu
 | Length  | Gets or sets the length of the current StringBuilder object. | Length |
 | MaxCapacity  | Gets the maximum capacity of this instance. | MaxCapacity |
 
-| Property Name | Description | `Stringbuilder.cls` Name |
+## Functions
+| Function Name | Description | `Stringbuilder.cls` Name |
 | :------------ | :---------- | :----------------------- |
 | Append(Boolean)  | Appends the string representation of a specified Boolean value to this instance. | Append |
 | Append(Byte)  | Appends the string representation of a specified 8-bit unsigned integer to this instance. | Append |
