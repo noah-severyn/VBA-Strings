@@ -54,46 +54,82 @@ Private pBuffer As Buffer
 Private pMaxCapacity As Long
 
 
-'===============================================================================
-'Returns the capacity of the string i.e. total length of buffer
-'===============================================================================
+'''===================================================================================================================================================
+'''<summary>
+'''Gets the number of characters that can be contained in the memory allocated by the current instance.
+'''</summary>
+'''<returns>The maximum number of characters that can be contained in the memory allocated by the current instance. Its value can range from Length to MaxCapacity.</returns>
+'''===================================================================================================================================================
 Public Property Get CurrentCapacity() As Long
     CurrentCapacity = pBuffer.capacity_
 End Property
-
-'===============================================================================
-'Returns the length of the string i.e. total number of used characters
-'===============================================================================
+'''===================================================================================================================================================
+'''<summary>
+'''Gets the length of the current StringBuilder object.
+'''</summary>
+'''<returns>The length of this instance.</returns>
+'''===================================================================================================================================================
 Public Property Get Length() As Long
     Length = pBuffer.endIndex_
 End Property
-
-
+'''===================================================================================================================================================
+'''<summary>
+'''Gets the character at the specified character position in this instance.
+'''</summary>
+'''<param name="index">The position of the character.</param>
+'''<returns>The Unicode character at position index.</returns>
+'''=================================================================================================================================================== 'TODO add default value here
 Public Property Get Char(ByVal index As Long) As String
+    If index > pBuffer.endIndex_ Then index = pBuffer.endIndex_
     Char = Mid$(pBuffer.text_, index + 1, 1)
 End Property
-
-
-'===============================================================================
-'Returns the maximum capacity of the string i.e. maximum the buffer will be allowed to be set
-'===============================================================================
+'Public Property Let Char(ByVal index As Long) 'TODO
+'    mid#(pbuffer.text_,
+'End Property
+'''===================================================================================================================================================
+'''<summary>
+'''Sets the maximum capacity of this instance, regardless of the current memory allocation.
+'''</summary>
+'''===================================================================================================================================================
 Public Property Let MaxCapacity(ByVal maximum As Long)
+    If maximum <= 0 Then
+        Err.Raise 9, "StringBuilder.MaxCapacity", "Maximum capacity must be greater than zero."
+    End If
     pMaxCapacity = maximum
 End Property
+'''===================================================================================================================================================
+'''<summary>
+'''Gets the maximum capacity of this instance, regardless of the current memory allocation.
+'''</summary>
+'''<returns>The maximum number of characters this instance can hold.</returns>
+'''<remarks>
+'''The absolute maximum capacity is the max length allowed for variable length strings: 2,147,483,646
+'''</remarks>
+'''===================================================================================================================================================
 Public Property Get MaxCapacity() As Long
     MaxCapacity = pMaxCapacity
 End Property
 
 
+
+'''===================================================================================================================================================
+'''<summary>
+'''Initializes a new instance of the StringBuilder class with the maximum capacity set to the max length allowed for variable length strings.
+'''</summary>
+'''===================================================================================================================================================
 Private Sub Class_Initialize()
-    'Maximum string length allowed by VBA for a variable-length string
     pMaxCapacity = &H7FFFFFFF - 1 '2,147,483,646 (dec)
 End Sub
-
-'****************************************************************************************************************************************************
-'Extend buffer size if needed
-'****************************************************************************************************************************************************
+'''===================================================================================================================================================
+'''<summary>
+'''Extend the buffer size if needed.
+'''</summary>
+'''<param name="minimumCapacity">Capacity to verify</param>
+'''===================================================================================================================================================
 Private Sub EnsureCapacity(ByVal minimumCapacity As Long)
+    If minimumCapacity <= 0 Then
+        Err.Raise 9, "StringBuilder.EnsureCapacity", "Minimum capacity must be greater than zero."
+    End If
     If minimumCapacity > pBuffer.capacity_ Then
         Dim oldCapacity As Long: oldCapacity = pBuffer.capacity_
         
@@ -111,11 +147,15 @@ End Sub
 
 
 
-'****************************************************************************************************************************************************
-'Append new text to buffer
-'****************************************************************************************************************************************************
-Public Sub Append(ByRef textToAppend As String)
-    Dim addedLength As Long: addedLength = VBA.Len(textToAppend)
+
+'''===================================================================================================================================================
+'''<summary>
+'''Appends a copy of the specified string to this instance.
+'''</summary>
+'''<param name="text">The string to append.</param>
+'''===================================================================================================================================================
+Public Sub Append(ByRef text As String)
+    Dim addedLength As Long: addedLength = VBA.Len(text)
     If addedLength = 0 Then Exit Sub
     Dim newEndIndex As Long: newEndIndex = pBuffer.endIndex_ + addedLength
     
@@ -126,38 +166,74 @@ Public Sub Append(ByRef textToAppend As String)
 
     'Replace unused characters with the new text after the last used position. The Mid Statement can be used on the left hand of the assignment to
     'in-place replace characters: https://en.wikibooks.org/wiki/Visual_Basic/Built_In_String_Functions#Indexing_and_Substrings
-    Mid$(pBuffer.text_, pBuffer.endIndex_ + 1, addedLength) = textToAppend
+    Mid$(pBuffer.text_, pBuffer.endIndex_ + 1, addedLength) = text
     
     'Store last character position
     pBuffer.endIndex_ = newEndIndex
 End Sub
 
-Public Sub AppendMultiple(ParamArray values() As Variant)
+
+
+'''===================================================================================================================================================
+'''<summary>
+'''Appends a copy of the specified strings to this instance.
+'''</summary>
+'''<param name="args()">One or more strings to append.</param>
+'''===================================================================================================================================================
+Public Sub AppendMultiple(ParamArray args() As Variant)
     Dim idx As Long
-    For idx = LBound(values) To UBound(values)
-        Append CStr(values(idx))
+    Dim idxInner As Long
+    For idx = LBound(args) To UBound(args)
+        If IsArray(args(idx)) Then
+            For idxinnder = 0 To UBound(args(idx))
+                Append CStr(args(idx)(idxInner))
+            Next idxInner
+        Else
+            Append CStr(args(idx))
+        End If
     Next idx
 End Sub
 
-Public Sub AppendJoin(ByVal separator As String, ByRef values() As String)
+
+
+'''===================================================================================================================================================
+'''<summary>
+'''Concatenates the strings of the provided array, using the specified separator between each string, then appends the result to the current instance of the string builder.
+'''</summary>
+'''<param name="separator">Separator to append in between each value.</param>
+'''<param name="values()">One or more strings to append.</param>
+'''===================================================================================================================================================
+Public Sub AppendJoin(ByVal separator As String, ByRef args() As String)
+    'TODO - .AppendJoin - what if args(idx) is an array?
     Dim idx As Long
-    For idx = LBound(values) To UBound(values)
+    For idx = LBound(args) To UBound(args)
         Append separator
-        Append CStr(values(idx))
+        Append CStr(args(idx))
     Next idx
 End Sub
 
-Public Sub AppendLine(Optional ByVal textToAppend As String)
-    Append Chr$(10)
-    Append textToAppend
+
+
+'''===================================================================================================================================================
+'''<summary>
+'''Appends the default line terminator, or a copy of a specified string and the default line terminator, to the end of this instance.
+'''</summary>
+'''<param name="text">The string to append.</param>
+'''===================================================================================================================================================
+Public Sub AppendLine(Optional ByVal text As String)
+    Append vbNewLine
+    If textToAppend <> vbNullString Then
+        Append text
+    End If
 End Sub
 
 
 
-
-'****************************************************************************************************************************************************
-'Reset buffer members for (re)usage
-'****************************************************************************************************************************************************
+'''===================================================================================================================================================
+'''<summary>
+'''Removes all characters from the current StringBuilder instance.
+'''</summary>
+'''===================================================================================================================================================
 Public Sub Clear()
     pBuffer.text_ = vbNullString
     pBuffer.endIndex_ = 0
@@ -205,6 +281,11 @@ End Function
 
 '0-based index
 Public Function IndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
+    If startPos < 0 Then
+        Err.Raise 9, "StringBuilder.IndexOf", "Start position must be greater than zero."
+    ElseIf startPos > Len(baseString) Then
+        Err.Raise 9, "StringBuilder.IndexOf", "Start position must be less than the base string length."
+    End If
     'TODO - .IndexOf I dont't think the case comparison would work
     If compare Mod 2 = 1 Then
         'searchString = LCase$(searchString)
@@ -213,7 +294,7 @@ Public Function IndexOf(ByVal stringToFind As String, Optional ByVal startPos As
 
     If compare = Binary Or BinaryIgnoreCase Then
         IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = Text Or TextIngnoreCase Then
+    ElseIf compare = text Or TextIngnoreCase Then
         IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
         IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbDatabaseCompare) - 1
@@ -225,21 +306,26 @@ End Function
 
 
 
-'****************************************************************************************************************************************************
-'Insert new text into buffer
-'****************************************************************************************************************************************************
-Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Optional ByVal repetitions As Long = 1)
+'''===================================================================================================================================================
+'''<summary>
+'''Inserts one or more copies of a specified string into this instance at the specified character position.
+'''</summary>
+'''<param name="startIndex">The position in this instance where insertion begins.</param>
+'''<param name="text">The string to insert.</param>
+'''<param name="repetitions">The number of times to insert value.</param>
+'''===================================================================================================================================================
+Public Sub Insert(ByVal startIndex As Long, ByRef text As String, Optional ByVal repetitions As Long = 1)
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Insert", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.Insert", "Invalid startIndex"
     ElseIf repetitions < 1 Then
-        Err.Raise 9, TypeName(Me) & ".Insert", "Number of repetitions cannot be less than 0"
+        Err.Raise 9, "StringBuilder.Insert", "Number of repetitions cannot be less than 0"
     End If
     
     If repetitions > 1 Then
-        textToInsert = strings.Replace(VBA.String(repetitions, " "), " ", textToInsert)
+        text = strings.Replace(VBA.String(repetitions, " "), " ", text)
     End If
     
-    Dim addedLength As Long: addedLength = VBA.Len(textToInsert)
+    Dim addedLength As Long: addedLength = VBA.Len(text)
     If addedLength = 0 Then Exit Sub 'Nothing to insert
     Dim newEndIndex As Long: newEndIndex = pBuffer.endIndex_ + addedLength
     Dim shiftLength As Long: shiftLength = pBuffer.endIndex_ - startIndex
@@ -254,7 +340,7 @@ Public Sub Insert(ByVal startIndex As Long, ByRef textToInsert As String, Option
     
     'Replace unused characters with the new text after the last used position. The Mid Statement can be used on the left hand of the assignment to
     'in-place replace characters: https://en.wikibooks.org/wiki/Visual_Basic/Built_In_String_Functions#Indexing_and_Substrings
-    Mid$(pBuffer.text_, startIndex + 1, addedLength) = textToInsert
+    Mid$(pBuffer.text_, startIndex + 1, addedLength) = text
     
     'Update last character position
     pBuffer.endIndex_ = newEndIndex
@@ -265,7 +351,7 @@ End Sub
 Public Sub Interpolate(ParamArray args() As Variant)
     Dim argCount As Long: argCount = UBound(args) - LBound(args) + 1
     If (argCount) Mod 2 <> 0 Then
-        Err.Raise 5, TypeName(Me) & ".Interpolate", "Invalid number of parameters. The interpolation parameters must be provided in pairs."
+        Err.Raise 5, "StringBuilder.Interpolate", "Invalid number of parameters. The interpolation parameters must be provided in pairs."
     End If
     
     Dim argIdx As Long
@@ -277,7 +363,7 @@ Public Sub Interpolate(ParamArray args() As Variant)
     Exit Sub
     
 InterpolateInvalidArg:
-    Err.Raise 5, TypeName(Me) & ".Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+    Err.Raise 5, "StringBuilder.Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
 End Sub
 
 
@@ -292,7 +378,7 @@ Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionar
     Exit Function
     
 Interpolate2InvalidArg:
-    Err.Raise 5, TypeName(Me) & ".Interpolate2", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+    Err.Raise 5, "StringBuilder.Interpolate2", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
 End Function
 
 
@@ -305,7 +391,7 @@ Public Function LastIndexOf(ByVal stringToFind As String, Optional ByVal startPo
     Dim pos As Long
     If compare = Binary Or BinaryIgnoreCase Then
         pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbBinaryCompare) - 1
-    ElseIf compare = Text Or TextIngnoreCase Then
+    ElseIf compare = text Or TextIngnoreCase Then
         pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbTextCompare) - 1
     ElseIf compare = Database Or DatabaseIgnoreCase Then
         pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbDatabaseCompare) - 1
@@ -319,16 +405,18 @@ End Function
 
 
 
-
-'****************************************************************************************************************************************************
-'Delete a portion of the text
-'****************************************************************************************************************************************************
+'''===================================================================================================================================================
+'''<summary>
+'''Removes the specified range of characters from this instance.
+'''</summary>
+'''<param name="startIndex">The zero-based position in this instance where removal begins.</param>
+'''<param name="count">TThe number of characters to remove.</param>
+'''===================================================================================================================================================
 Public Sub Remove(ByVal startIndex As Long, ByVal count As Long)
-    'Validate Input
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Delete", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.Delete", "Invalid startIndex"
     ElseIf count < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Delete", "Invalid count"
+        Err.Raise 5, "StringBuilder.Delete", "Invalid count"
     ElseIf count = 0 Then
         Exit Sub 'Nothing to delete
     End If
@@ -351,9 +439,16 @@ Public Sub Remove(ByVal startIndex As Long, ByVal count As Long)
 End Sub
 
 
+
+'''===================================================================================================================================================
+'''<summary>
+'''Removes the specified number of characters from the end this instance.
+'''</summary>
+'''<param name="count">The number of characters to remove.</param>
+'''===================================================================================================================================================
 Public Sub RemoveFromEnd(ByVal count As Long)
     If count < 0 Or count > pBuffer.endIndex_ Then
-        Err.Raise 5, TypeName(Me) & ".RemoveFromEnd", "Invalid count"
+        Err.Raise 5, "StringBuilder.RemoveFromEnd", "Invalid count"
     ElseIf count = 0 Then
         Exit Sub 'Nothing to delete
     End If
@@ -362,9 +457,16 @@ Public Sub RemoveFromEnd(ByVal count As Long)
 End Sub
 
 
+
+'''===================================================================================================================================================
+'''<summary>
+'''Removes all instances of the specified characters from the end this instance until no more are remaining.
+'''</summary>
+'''<param name="stringToRemove">The text to remove.</param>
+'''===================================================================================================================================================
 Public Sub RemoveFromEndWhile(ByVal stringToRemove As String)
     If stringToRemove = vbNullString Or Len(stringToRemove) = 0 Then
-        Err.Raise 9, TypeName(Me) & ".RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
+        Err.Raise 9, "StringBuilder.RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
     End If
     
     Dim charCount As Long: charCount = Len(stringToRemove)
@@ -393,49 +495,75 @@ End Sub
 
 
 
-
-'****************************************************************************************************************************************************
-'Replace a portion of the buffer with a given text
-'****************************************************************************************************************************************************
-Public Sub Overwrite(ByVal startIndex As Long, ByVal Length As Long, ByVal replacementText As String) 'TODO - .Overwrite redesign to be 0-based
+'''===================================================================================================================================================
+'''<summary>
+'''Overwrites the specified range of characters from this instance with the specified replacement text.
+'''</summary>
+'''<param name="startIndex">The zero-based position in this instance where overwriting begins.</param>
+'''<param name="count">The number of characters to remove.</param>
+'''<param name="replacementText">The number of characters to remove.</param>
+'''===================================================================================================================================================
+Public Sub Overwrite(ByVal startIndex As Long, ByVal count As Long, ByVal replacementText As String)
     'Validate Input
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Overwrite", "Invalid startIndex"
-    ElseIf Length < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Overwrite", "Invalid length"
-    ElseIf Length = 0 Then
+        Err.Raise 9, "StringBuilder.Overwrite", "Invalid startIndex"
+    ElseIf count < 0 Then
+        Err.Raise 5, "StringBuilder.Overwrite", "Invalid count"
+    ElseIf count = 0 Then
         Exit Sub 'Nothing to replace
     End If
     
     Dim usedLength As Long
     
     'Compute usable length
-    If startIndex + Length > pBuffer.endIndex_ + 1 Then
+    If startIndex + count > pBuffer.endIndex_ + 1 Then
         usedLength = pBuffer.endIndex_ - startIndex
     Else
-        usedLength = Length
+        usedLength = count
     End If
     
     Mid$(pBuffer.text_, startIndex + 1, usedLength) = replacementText
 End Sub
 
 
+
+'''===================================================================================================================================================
+'''<summary>
+'''Replaces all occurrences of a specified string in this instance with another specified string.
+'''</summary>
+'''<param name="oldString">The string to replace.</param>
+'''<param name="newString">The string that replaces oldValue.</param>
+'''<param name="numberOfSubstitutions">The number of substitutions to make.</param>
+'''<param name="direction">The direction to start substituting from.</param>
+'''===================================================================================================================================================
 Public Sub Replace(ByVal oldString As String, ByVal newString As String, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
     'TODO - .Replace implement direction
     Me.ReplaceBetween oldString, newString, 0, pBuffer.endIndex_, numberOfSubstitutions
 End Sub
 
 
-Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, ByVal startIndex As Long, ByVal Length As Long, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
+
+'''===================================================================================================================================================
+'''<summary>
+'''Replaces, within a substring of this instance, all occurrences of a specified string with another specified string.
+'''</summary>
+'''<param name="oldString">The string to replace.</param>
+'''<param name="newString">The string that replaces oldValue.</param>
+'''<param name="startIndex">The position in this instance where the substring begins.</param>
+'''<param name="count">The length of the substring.</param>
+'''<param name="numberOfSubstitutions">The number of substitutions to make.</param>
+'''<param name="direction">The direction to start substituting from.</param>
+'''===================================================================================================================================================
+Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, ByVal startIndex As Long, ByVal count As Long, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
 'TODO - .ReplaceBetween implement direction
     'Validate Input
     If oldString = vbNullString Then
-        Err.Raise 5, TypeName(Me) & ".Replace", "String to find cannot be null"
+        Err.Raise 5, "StringBuilder.Replace", "String to find cannot be null"
     ElseIf startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Replace", "Invalid startIndex"
-    ElseIf Length < -1 Then
-        Err.Raise 5, TypeName(Me) & ".Replace", "Invalid length"
-    ElseIf Length = 0 Or numberOfSubstitutions = 0 Then
+        Err.Raise 9, "StringBuilder.Replace", "Invalid startIndex"
+    ElseIf count < -1 Then
+        Err.Raise 5, "StringBuilder.Replace", "Invalid length"
+    ElseIf count = 0 Or numberOfSubstitutions = 0 Then
         Exit Sub 'Nothing to replace
     End If
     
@@ -485,19 +613,23 @@ End Sub
 
 
 
-
-'****************************************************************************************************************************************************
-'Returns a substring
-'****************************************************************************************************************************************************
-Public Function Substring(ByVal startIndex As Long, ByVal Length As Long) As String
+'''===================================================================================================================================================
+'''<summary>
+'''Retrieves a substring from this instance. The substring starts at a specified character position and continues to the end of the string or to the specified length.
+'''</summary>
+'''<param name="startIndex">The zero-based starting character position of a substring in this instance.</param>
+'''<param name="startIndex">The number of characters in the substring.</param>
+'''===================================================================================================================================================
+Public Function Substring(ByVal startIndex As Long, Optional ByVal count As Long = -1) As String
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Substring", "Invalid startIndex"
-    ElseIf Length < 0 Then
-        Err.Raise 5, TypeName(Me) & ".Substring", "Invalid length"
-    ElseIf Length = 0 Then
+        Err.Raise 9, "StringBuilder.Substring", "Invalid startIndex"
+    ElseIf count < -1 Then
+        Err.Raise 5, "StringBuilder.Substring", "Invalid length"
+    ElseIf count = 0 Then
         Exit Function
     End If
     
+    If count = -1 Then count = pBuffer.endIndex_ - startIndex
     Dim usedLength As Long
     
     'Compute usable length
@@ -520,19 +652,25 @@ End Function
 
 
 
-Public Function ToString(Optional ByVal startIndex As Long = 0, Optional ByVal Length As Long = 0) As String
-    'Validate Input
+'''===================================================================================================================================================
+'''<summary>
+'''Converts the value of a StringBuilder to a String.
+'''</summary>
+'''<param name="startIndex">The starting position of the substring in this instance.</param>
+'''<param name="count">The length of the substring.</param>
+'''===================================================================================================================================================
+Public Function ToString(Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0) As String
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".ToString", "Invalid startIndex"
-    ElseIf Length < 0 Then
-        Err.Raise 5, TypeName(Me) & ".ToString", "Invalid length"
+        Err.Raise 9, "StringBuilder.ToString", "Invalid startIndex"
+    ElseIf count < 0 Then
+        Err.Raise 5, "StringBuilder.ToString", "Invalid length"
     ElseIf pBuffer.endIndex_ = 0 Then
         ToString = vbNullString
         Exit Function
     End If
     
     If startIndex > 0 Then
-        ToString = Me.Substring(startIndex, Length)
+        ToString = Me.Substring(startIndex, count)
     Else
         ToString = VBA.Left$(pBuffer.text_, pBuffer.endIndex_)
     End If
