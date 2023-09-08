@@ -2,7 +2,7 @@
 The following table outlines all of the constructors, properties, fields, and functions in the .NET [String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-7.0) class and their equivalents in this repository. .NET functions with an ❌ have no equivalent in this repository.
 
 ## Constructors
-| Constructor | Description | `Stringbuilder.cls` Name |
+| Constructor | Description | `Strings.bas` Name |
 | :---------- | :---------- | :----------------------- |
 | String(Char*)  | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters. | ❌ |
 | String(Char*, Int32, Int32)  | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of Unicode characters, a starting character position within that array, and a length. | ❌ |
@@ -15,18 +15,18 @@ The following table outlines all of the constructors, properties, fields, and fu
 | String(SByte*, Int32, Int32, Encoding) | Initializes a new instance of the String class to the value indicated by a specified pointer to an array of 8-bit signed integers, a starting position within that array, a length, and an Encoding object. | ❌ |
 
 ## Properties
-| Property Name | Description | `Stringbuilder.cls` Name |
+| Property Name | Description | `Strings.bas` Name |
 | :------------ | :---------- | :----------------------- |
 | Chars[Int32]  | Gets the Char object at a specified position in the current String object. | Char |
 | Length  | GGets the number of characters in the current String object. | Length |
 
 ## Fields
-| Field Name | Description | `Stringbuilder.cls` Name |
+| Field Name | Description | `Strings.bas` Name |
 | :--------- | :---------- | :----------------------- |
 | Empty  | Represents the empty string. This field is read-only. | EmptyString |
 
 ## Functions
-| Function Name | Description | `Stringbuilder.cls` Name |
+| Function Name | Description | `Strings.bas` Name |
 | :------------ | :---------- | :----------------------- |
 | Clone()  | Returns a reference to this instance of String. | ❌ | ❌|
 | Compare(String, Int32, String, Int32, Int32)  | Compares substrings of two specified String objects and returns an integer that indicates their relative position in the sort order. | ❌ | ❌|
