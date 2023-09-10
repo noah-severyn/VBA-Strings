@@ -8,6 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Folder("VBA-Strings")
+'@IgnoreModule ProcedureNotUsed, ProceudreNotUsed
 ''===================================================================================================================================================
 '' VBA-Strings
 ''-------------------------------------------------
@@ -35,6 +36,7 @@ Attribute VB_Exposed = False
 ''      https://github.com/noah-severyn/VBA-Strings
 ''    * Based on VBA-StringBuffer (https://github.com/cristianbuse/VBA-StringBuffer), Copyright (c) 2019 Ion Cristian Buse, licensed under the MIT license.
 ''===================================================================================================================================================
+
 Option Explicit
 
 Public Enum ProcessDirection
@@ -185,7 +187,7 @@ Public Sub AppendMultiple(ParamArray args() As Variant)
     Dim idxInner As Long
     For idx = LBound(args) To UBound(args)
         If IsArray(args(idx)) Then
-            For idxinnder = 0 To UBound(args(idx))
+            For idxInner = 0 To UBound(args(idx))
                 Append CStr(args(idx)(idxInner))
             Next idxInner
         Else
@@ -204,12 +206,26 @@ End Sub
 '''<param name="values()">One or more strings to append.</param>
 '''===================================================================================================================================================
 Public Sub AppendJoin(ByVal separator As String, ByRef args() As String)
-    'TODO - .AppendJoin - what if args(idx) is an array?
     Dim idx As Long
-    For idx = LBound(args) To UBound(args)
-        Append separator
-        Append CStr(args(idx))
+    Dim idxInner As Long
+    On Error GoTo AppendInvalidArg
+    For idx = 0 To UBound(args)
+        If IsArray(args(idx)) Then
+            For idxInner = 0 To UBound(args(idx))
+                Append separator
+                '@Ignore DefaultMemberRequired
+                Append = Append & CStr(args(idx)(idxInner))
+            Next idxInner
+        Else
+            Append separator
+            Append CStr(args(idx))
+        End If
     Next idx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "StringBuilder.AppendJoin", "Argument at position " & idx * 2 + 1 & " could not be converted to a string."
 End Sub
 
 
@@ -222,7 +238,7 @@ End Sub
 '''===================================================================================================================================================
 Public Sub AppendLine(Optional ByVal text As String)
     Append vbNewLine
-    If textToAppend <> vbNullString Then
+    If text <> vbNullString Then
         Append text
     End If
 End Sub
@@ -280,26 +296,27 @@ End Function
 
 
 '0-based index
-Public Function IndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
+Public Function IndexOf(ByVal searchString As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
     If startPos < 0 Then
         Err.Raise 9, "StringBuilder.IndexOf", "Start position must be greater than zero."
-    ElseIf startPos > Len(baseString) Then
-        Err.Raise 9, "StringBuilder.IndexOf", "Start position must be less than the base string length."
-    End If
-    'TODO - .IndexOf I dont't think the case comparison would work
-    If compare Mod 2 = 1 Then
-        'searchString = LCase$(searchString)
-        stringToFind = LCase$(stringToFind)
+    ElseIf startPos > Len(pBuffer.endIndex_) Then
+        Err.Raise 9, "StringBuilder.IndexOf", "Start position must be less than this instance's length."
     End If
 
-    If compare = Binary Or BinaryIgnoreCase Then
-        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
-        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
-        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind, vbDatabaseCompare) - 1
+    Dim tempString As String: tempString = Me.Substring(startPos, pBuffer.endIndex_ - startPos)
+    If compare Mod 2 = 1 Then
+        searchString = LCase$(searchString)
+        tempString = LCase$(tempString)
+    End If
+
+    If compare = Binary Or compare = BinaryIgnoreCase Then
+        IndexOf = InStr(startPos + 1, tempString, searchString, vbBinaryCompare) - 1
+    ElseIf compare = text Or compare = TextIngnoreCase Then
+        IndexOf = InStr(startPos + 1, tempString, searchString, vbTextCompare) - 1
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
+        IndexOf = InStr(startPos + 1, tempString, searchString, vbDatabaseCompare) - 1
     Else
-        IndexOf = InStr(startPos + 1, pBuffer.text_, stringToFind) - 1
+        IndexOf = InStr(startPos + 1, tempString, searchString) - 1
     End If
     If IndexOf >= pBuffer.endIndex_ Then IndexOf = -1
 End Function
@@ -314,7 +331,7 @@ End Function
 '''<param name="text">The string to insert.</param>
 '''<param name="repetitions">The number of times to insert value.</param>
 '''===================================================================================================================================================
-Public Sub Insert(ByVal startIndex As Long, ByRef text As String, Optional ByVal repetitions As Long = 1)
+Public Sub Insert(ByVal startIndex As Long, ByVal text As String, Optional ByVal repetitions As Long = 1)
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
         Err.Raise 9, "StringBuilder.Insert", "Invalid startIndex"
     ElseIf repetitions < 1 Then
@@ -322,7 +339,7 @@ Public Sub Insert(ByVal startIndex As Long, ByRef text As String, Optional ByVal
     End If
     
     If repetitions > 1 Then
-        text = strings.Replace(VBA.String(repetitions, " "), " ", text)
+        text = Strings.Replace(VBA.String(repetitions, " "), " ", text)
     End If
     
     Dim addedLength As Long: addedLength = VBA.Len(text)
@@ -367,39 +384,40 @@ InterpolateInvalidArg:
 End Sub
 
 
-Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionary)
+Public Sub Interpolate2(ByVal baseString As String, ByVal args As Dictionary)
     Dim argIdx As Long
     Dim key As Variant
     On Error GoTo Interpolate2InvalidArg
     For Each key In args.Keys()
-        Me.Replace "{" & CStr(key) & "}", CStr(args(key))
+        Interpolate2 = Strings.Replace(baseString, "{" & CStr(key) & "}", CStr(args.item(key)))
+        argIdx = argIdx + 1
     Next key
     On Error GoTo 0
-    Exit Function
+    Exit Sub
     
 Interpolate2InvalidArg:
     Err.Raise 5, "StringBuilder.Interpolate2", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
-End Function
+End Sub
 
 
-Public Function LastIndexOf(ByVal stringToFind As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
-    'TODO - .LastIndexOf how to handle case comparisons
+Public Function LastIndexOf(ByVal searchString As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
+    Dim tempString As String: tempString = Me.Substring(startPos, pBuffer.endIndex_ - startPos)
     If compare Mod 2 = 1 Then
-        'searchString = LCase$(searchString)
-        stringToFind = LCase$(stringToFind)
+        searchString = LCase$(searchString)
+        tempString = LCase$(tempString)
     End If
     Dim pos As Long
-    If compare = Binary Or BinaryIgnoreCase Then
-        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
-        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
-        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1, vbDatabaseCompare) - 1
+    If compare = Binary Or compare = BinaryIgnoreCase Then
+        pos = InStrRev(tempString, searchString, startPos + 1, vbBinaryCompare) - 1
+    ElseIf compare = text Or compare = TextIngnoreCase Then
+        pos = InStrRev(tempString, searchString, startPos + 1, vbTextCompare) - 1
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
+        pos = InStrRev(tempString, searchString, startPos + 1, vbDatabaseCompare) - 1
     Else
-        pos = InStrRev(pBuffer.text_, stringToFind, startPos + 1) - 1
+        pos = InStrRev(tempString, searchString, startPos + 1) - 1
     End If
     
-    If pos >= pBuffer.endIndex_ Then pos = LastIndexOf(stringToFind, pos - 1, compare)
+    If pos >= pBuffer.endIndex_ Then pos = LastIndexOf(searchString, pos - 1, compare)
     LastIndexOf = pos
 End Function
 
@@ -481,13 +499,10 @@ End Sub
 Public Sub RemoveNonPrintableChars()
     'Does not remove new line characters
     Dim idx As Long
-    Dim c As Long
-    Dim currentCharCode As Long
-
-    RemoveNonPrintableChars = String$(Len(baseString), Chr$(0))
+    Dim currCharCode As Long
     For idx = 0 To pBuffer.endIndex_
-        currentCharCode = AscW(Mid$(pBuffer.text_, idx + 1, 1)) And &HFFFF& 'Strings.AscW2
-        If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
+        currCharCode = AscW(Mid$(pBuffer.text_, idx + 1, 1)) And &HFFFF& 'Equivalent to Strings.AscW2
+        If currCharCode > 31 Or currCharCode = 13 Or currCharCode = 10 Then
             Me.Remove idx, 1
         End If
     Next idx
@@ -537,8 +552,7 @@ End Sub
 '''<param name="direction">The direction to start substituting from.</param>
 '''===================================================================================================================================================
 Public Sub Replace(ByVal oldString As String, ByVal newString As String, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
-    'TODO - .Replace implement direction
-    Me.ReplaceBetween oldString, newString, 0, pBuffer.endIndex_, numberOfSubstitutions
+    Me.ReplaceBetween oldString, newString, 0, pBuffer.endIndex_, numberOfSubstitutions, direction
 End Sub
 
 
@@ -555,8 +569,6 @@ End Sub
 '''<param name="direction">The direction to start substituting from.</param>
 '''===================================================================================================================================================
 Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, ByVal startIndex As Long, ByVal count As Long, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
-'TODO - .ReplaceBetween implement direction
-    'Validate Input
     If oldString = vbNullString Then
         Err.Raise 5, "StringBuilder.Replace", "String to find cannot be null"
     ElseIf startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
@@ -576,13 +588,23 @@ Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, 
         maxSubs = numberOfSubstitutions
     End If
     
-    Do While pos < pBuffer.endIndex_ And countSubs < maxSubs
-        pos = Me.IndexOf(oldString, pos)
-        If pos = -1 Then Exit Sub 'No more replacements to make
-        Me.Remove pos, Len(oldString)
-        Me.Insert pos, newString, 1
-        countSubs = countSubs + 1
-    Loop
+    If direction = FromStart Then
+        Do While pos < count And countSubs < maxSubs
+            pos = Me.IndexOf(oldString, pos)
+            If pos = -1 Then Exit Sub 'No more replacements to make
+            Me.Remove pos, Len(oldString)
+            Me.Insert pos, newString, 1
+            countSubs = countSubs + 1
+        Loop
+    Else
+        Do While pos > pBuffer.endIndex_ - count And countSubs < maxSubs
+            pos = Me.LastIndexOf(oldString, pos)
+            If pos = -1 Then Exit Sub 'No more replacements to make
+            Me.Remove pos, Len(oldString)
+            Me.Insert pos, newString, 1
+            countSubs = countSubs + 1
+        Loop
+    End If
 End Sub
 
 

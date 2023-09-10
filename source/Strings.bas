@@ -61,15 +61,15 @@ End Function
 Public Function Append(ByVal baseString As String, ParamArray args() As Variant) As String
     Append = baseString
     Dim argIdx As Long
-    Dim argIdxInner
+    Dim argIdxInner As Long
     On Error GoTo AppendInvalidArg
     For argIdx = 0 To UBound(args)
-        If IsArray(args(idx)) Then
-            For argIdxInner = 0 To UBound(args(idx))
-                Append = Append & CStr(args(idx)(idxInner))
+        If IsArray(args(argIdx)) Then
+            For argIdxInner = 0 To UBound(args(argIdx))
+                Append = Append & CStr(args(argIdx)(argIdxInner))
             Next argIdxInner
         Else
-            Append = Append & CStr(args(idx))
+            Append = Append & CStr(args(argIdx))
         End If
     Next argIdx
     On Error GoTo 0
@@ -82,15 +82,15 @@ End Function
 Public Function Append2(ByVal baseString As String, ByVal args As Collection) As String
     Append2 = baseString
     Dim argIdx As Long
-    Dim argIdxInner
+    Dim argIdxInner As Long
     On Error GoTo AppendInvalidArg
     For argIdx = 0 To args.count
-        If IsArray(args(idx)) Then
-            For argIdxInner = 0 To UBound(args(idx))
-                Append2 = Append2 & CStr(args(idx)(idxInner))
+        If IsArray(args.item(argIdx)) Then
+            For argIdxInner = 0 To UBound(args.item(argIdx))
+                Append2 = Append2 & CStr(args.item(argIdx)(argIdxInner))
             Next argIdxInner
         Else
-            Append2 = Append2 & CStr(args(idx))
+            Append2 = Append2 & CStr(args.item(argIdx))
         End If
     Next argIdx
     On Error GoTo 0
@@ -104,15 +104,15 @@ End Function
 Public Function AppendLine(ByVal baseString As String, ParamArray args() As Variant) As String
     AppendLine = baseString
     Dim argIdx As Long
-    Dim argIdxInner
+    Dim argIdxInner As Long
     On Error GoTo AppendInvalidArg
     For argIdx = 0 To args.count
-        If IsArray(args(idx)) Then
-            For argIdxInner = 0 To UBound(args(idx))
-                AppendLine = AppendLine & vbNewLine & CStr(args(idx)(idxInner))
+        If IsArray(args(argIdx)) Then
+            For argIdxInner = 0 To UBound(args(argIdx))
+                AppendLine = AppendLine & vbNewLine & CStr(args(argIdx)(argIdxInner))
             Next argIdxInner
         Else
-            AppendLine = AppendLine & vbNewLine & CStr(args(idx))
+            AppendLine = AppendLine & vbNewLine & CStr(args(argIdx))
         End If
     Next argIdx
     Exit Function
@@ -124,15 +124,15 @@ End Function
 Public Function AppendLine2(ByVal baseString As String, ByVal args As Collection) As String
     AppendLine2 = baseString
     Dim argIdx As Long
-    Dim argIdxInner
+    Dim argIdxInner As Long
     On Error GoTo AppendInvalidArg
     For argIdx = 0 To args.count
-        If IsArray(args(idx)) Then
-            For argIdxInner = 0 To UBound(args(idx))
-                AppendLine2 = AppendLine2 & vbNewLine & CStr(args(idx)(idxInner))
+        If IsArray(args.item(argIdx)) Then
+            For argIdxInner = 0 To UBound(args.item(argIdx))
+                AppendLine2 = AppendLine2 & vbNewLine & CStr(args.item(argIdx)(argIdxInner))
             Next argIdxInner
         Else
-            AppendLine2 = AppendLine2 & vbNewLine & CStr(args(idx))
+            AppendLine2 = AppendLine2 & vbNewLine & CStr(args.item(argIdx))
         End If
     Next argIdx
     On Error GoTo 0
@@ -163,14 +163,14 @@ End Function
 
 Public Function Clean(ByVal baseString As String, Optional ByVal nonPrintable As Boolean = True, Optional ByVal newLines As Boolean = True, Optional ByVal nonBreaking As Boolean = True, Optional ByVal trimString As Boolean = True, Optional ByVal newLineReplacement As String = " ") As String
     Clean = baseString
-    If nonPrintable Then Clean = strings.RemoveNonPrintableChars(Clean)
-    If newLines Then Clean = strings.ReplaceNewLineChars(Clean, newLineReplacement)
-    If nonBreaking Then Clean = strings.ReplaceNonBreakingSpaces(Clean)
-    If trimString Then Clean = strings.Trim(Clean)
+    If nonPrintable Then Clean = Strings.RemoveNonPrintableChars(Clean)
+    If newLines Then Clean = Strings.ReplaceNewLineChars(Clean, newLineReplacement)
+    If nonBreaking Then Clean = Strings.ReplaceNonBreakingSpaces(Clean)
+    If trimString Then Clean = Strings.Trim(Clean)
 End Function
 
 
-Public Function Clear(ByVal baseString As String)
+Public Function Clear(ByVal baseString As String) As String
     Clear = vbNullString
 End Function
 
@@ -211,12 +211,12 @@ End Function
 
 
 
-Public Function Contains(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function Contains(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     Contains = IndexOf(baseString, stringToFind, , compare) >= 0
 End Function
 
 
-Public Function ContainsAfter(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAfter(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     If startIndex < 0 Then
         Err.Raise 9, "Strings.ContainsAfter", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
@@ -228,7 +228,7 @@ End Function
 
 
 
-Public Function ContainsBefore(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsBefore(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     If endIndex < 0 Then
         Err.Raise 9, "Strings.ContainsBefore", "End index must be greater than zero."
     End If
@@ -240,7 +240,7 @@ End Function
 
 
 
-Public Function ContainsAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     If startIndex < 0 Then
         Err.Raise 9, "Strings.ContainsAfter", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
@@ -281,7 +281,7 @@ End Sub
 
 
 
-Public Function CountSubstring(ByVal baseString As String, ByVal substringToFind As String, Optional ByVal compare As Comparison = 0) As Long
+Public Function CountSubstring(ByVal baseString As String, ByVal substringToFind As String, Optional ByVal compare As Comparison = Comparison.Default) As Long
     Dim locn As Long: locn = IndexOf(baseString, substringToFind, locn)
 
     Do While locn >= 0
@@ -306,8 +306,8 @@ End Function
 
 
 
-Public Function EndsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = 0) As Boolean
-    If Comparison = 0 Then
+Public Function EndsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
+    If Comparison = Comparison.Default Then
         EndsWith = Right$(baseString, Len(stringToFind)) = stringToFind
     Else
         EndsWith = IndexOfBetween(baseString, stringToFind, Len(baseString) - Len(stringToFind), Len(stringToFind), compare) >= 0
@@ -315,7 +315,7 @@ Public Function EndsWith(ByVal baseString As String, ByVal stringToFind As Strin
 End Function
 
 
-Public Function EndsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function EndsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
         EndsWithAny = EndsWith(baseString, stringsToFind(idx), compare)
@@ -335,14 +335,14 @@ Public Function Equals(ByVal baseString As String, ByVal compareString As String
         compareString = LCase$(compareString)
     End If
     
-    Matches = baseString = compareString
+    Equals = baseString = compareString
 End Function
 
 Public Function EqualsAny(ByVal baseString As String, ByVal compare As Comparison, ParamArray compareStrings() As Variant) As Boolean
     Dim idx As Long
     For idx = LBound(compareStrings) To UBound(compareStrings)
-        MatchesAny = Matches(baseString, compare, compareStrings(idx))
-        If MatchesAny = True Then Exit Function
+        EqualsAny = Equals(baseString, compare, compareStrings(idx))
+        If EqualsAny = True Then Exit Function
     Next idx
 End Function
 
@@ -354,7 +354,7 @@ End Function
 
 
 
-Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
+Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = Comparison.Default) As Long
     If startPos < 0 Then
         Err.Raise 9, "Strings.IndexOf", "Start position must be greater than zero."
     ElseIf startPos > Len(baseString) Then
@@ -366,11 +366,11 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
         stringToFind = LCase$(stringToFind)
     End If
 
-    If compare = Binary Or BinaryIgnoreCase Then
+    If compare = Binary Or compare = BinaryIgnoreCase Then
         IndexOf = InStr(startPos + 1, baseString, stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
+    ElseIf compare = text Or compare = TextIngnoreCase Then
         IndexOf = InStr(startPos + 1, baseString, stringToFind, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
         IndexOf = InStr(startPos + 1, baseString, stringToFind, vbDatabaseCompare) - 1
     Else
         IndexOf = InStr(startPos + 1, baseString, stringToFind) - 1
@@ -378,7 +378,7 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
 End Function
 
 
-Public Function IndexOfBetween(ByVal baseString As String, ByVal stringToFind As String, ByVal startPos As Long, ByVal count As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function IndexOfBetween(ByVal baseString As String, ByVal stringToFind As String, ByVal startPos As Long, ByVal count As Long, Optional ByVal compare As Comparison = Comparison.Default) As Long
     If startPos < 0 Then
         Err.Raise 9, "Strings.IndexOfBetween", "Start position must be greater than zero."
     ElseIf startPos > Len(baseString) Then
@@ -391,15 +391,16 @@ Public Function IndexOfBetween(ByVal baseString As String, ByVal stringToFind As
         baseString = LCase$(baseString)
         stringToFind = LCase$(stringToFind)
     End If
+    startPos = startPos + 1 'Adjustment for the 1-based strings in VBA
 
-    If compare = Binary Or BinaryIgnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
-        IndexOfBetween = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
+    If compare = Binary Or compare = BinaryIgnoreCase Then
+        IndexOfBetween = InStr(startPos, Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
+    ElseIf compare = text Or compare = TextIngnoreCase Then
+        IndexOfBetween = InStr(startPos, Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
+        IndexOfBetween = InStr(startPos, Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
     Else
-        IndexOfBetween = InStr(1, Mid$(baseString, startPos, count), stringToFind) - 1
+        IndexOfBetween = InStr(startPos, Mid$(baseString, startPos, count), stringToFind) - 1
     End If
 End Function
 
@@ -416,7 +417,7 @@ Public Function IndexOfAny(ByVal baseString As String, ByRef stringsToFind() As 
     If count = 0 Then count = Len(baseString)
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
-        IndexOfAny = IndexOfBetween(baseString, stringsToFind(idx), startPos + 1, Length)
+        IndexOfAny = IndexOfBetween(baseString, stringsToFind(idx), startPos, count)
         If IndexOfAny > 0 Then Exit Function
     Next idx
 End Function
@@ -441,7 +442,7 @@ Public Function Interpolate(ByVal baseString As String, ParamArray args() As Var
     Interpolate = baseString
     On Error GoTo InterpolateInvalidArg
     For argIdx = 0 To argCount - 2 Step 2 '
-        Interpolate = strings.Replace(Interpolate, "{" & CStr(args(argIdx)) & "}", CStr(args(argIdx + 1)))
+        Interpolate = Strings.Replace(Interpolate, "{" & CStr(args(argIdx)) & "}", CStr(args(argIdx + 1)))
     Next argIdx
     On Error GoTo 0
     Exit Function
@@ -451,38 +452,38 @@ InterpolateInvalidArg:
 End Function
 
 
-Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionary)
+Public Function Interpolate2(ByVal baseString As String, ByVal args As Dictionary) As String
     If baseString = vbNullString Then
         Err.Raise 5, "Strings.Interpolate", "Base string cannot be null."
     End If
     
-    Dim argIdx As Long
+    Dim idx As Long
     Interpolate2 = baseString
     Dim key As Variant
     On Error GoTo Interpolate2InvalidArg
     For Each key In args.Keys()
-        Interpolate2 = strings.Replace(Interpolate2, "{" & CStr(key) & "}", CStr(args(key)))
+        Interpolate2 = Strings.Replace(Interpolate2, "{" & CStr(key) & "}", CStr(args.item(key)))
+        idx = idx + 1
     Next key
     On Error GoTo 0
     Exit Function
     
 Interpolate2InvalidArg:
-    Err.Raise 5, "Strings.Interpolate", "Argument at position " & argIdx * 2 + 1 & " could not be converted to a string."
+    Err.Raise 5, "Strings.Interpolate", "Argument at position " & idx * 2 + 1 & " could not be converted to a string."
 End Function
 
 
 
 
-Public Function IsNull(ByVal baseString As String) As Boolean
-    IsNull = baseString = vbNullString
+Public Function IsNullOrEmpty(ByVal baseString As String) As Boolean
+    IsNullOrEmpty = baseString = vbNullString
 End Function
 
 
 
 Public Function IsNullOrWhiteSpace(ByVal baseString As String) As Boolean
-    'TODO - .IsNullOrWhiteSpace implement this
     'equivalent to: return String.IsNullOrEmpty(value) || value.Trim().Length == 0;
-    IsNullOrWhiteSpace = False
+    IsNullOrWhiteSpace = Strings.IsNullOrEmpty(baseString) Or Len(Strings.Trim(baseString)) = 0
 End Function
 
 
@@ -508,24 +509,24 @@ Public Function JoinBetween(ByVal delimiter As String, ByRef stringsToJoin() As 
         subset(idx) = stringsToJoin(idx + startIndex)
     Next idx
     
-    JoinBetween = strings.Join(delimiter, subset)
+    JoinBetween = Strings.Join(delimiter, subset)
 End Function
 
 
 
 
 
-Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = Comparison.Default) As Long
     If compare Mod 2 = 1 Then
         baseString = LCase$(baseString)
         stringToFind = LCase$(stringToFind)
     End If
 
-    If compare = Binary Or BinaryIgnoreCase Then
+    If compare = Binary Or compare = BinaryIgnoreCase Then
         LastIndexOf = InStrRev(baseString, stringToFind, startPos + 1, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
+    ElseIf compare = text Or compare = TextIngnoreCase Then
         LastIndexOf = InStrRev(baseString, stringToFind, startPos + 1, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
         LastIndexOf = InStrRev(baseString, stringToFind, startPos + 1, vbDatabaseCompare) - 1
     Else
         LastIndexOf = InStrRev(baseString, stringToFind, startPos + 1) - 1
@@ -535,17 +536,17 @@ End Function
 
 
 
-Public Function LastIndexOfBetween(ByVal baseString As String, ByVal stringToFind As String, ByVal startIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOfBetween(ByVal baseString As String, ByVal stringToFind As String, ByVal startIndex As Long, ByVal Length As Long, Optional ByVal compare As Comparison = Comparison.Default) As Long
     If compare Mod 2 = 1 Then
         baseString = LCase$(baseString)
         stringToFind = LCase$(stringToFind)
     End If
 
-    If compare = Binary Or BinaryIgnoreCase Then
+    If compare = Binary Or compare = BinaryIgnoreCase Then
         LastIndexOfBetween = InStrRev(Mid$(baseString, startIndex - Length, Length), stringToFind, -1, vbBinaryCompare) - 1
-    ElseIf compare = text Or TextIngnoreCase Then
+    ElseIf compare = text Or compare = TextIngnoreCase Then
         LastIndexOfBetween = InStrRev(Mid$(baseString, startIndex - Length, Length), stringToFind, -1, vbTextCompare) - 1
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
         LastIndexOfBetween = InStrRev(Mid$(baseString, startIndex - Length, Length), stringToFind, -1, vbDatabaseCompare) - 1
     Else
         LastIndexOfBetween = InStrRev(Mid$(baseString, startIndex - Length, Length), stringToFind, -1) - 1
@@ -655,7 +656,7 @@ End Function
 
 
 
-Public Function Overwrite(ByVal baseString As String, ByVal startIndex As Long, ByVal replacementText As String)
+Public Function Overwrite(ByVal baseString As String, ByVal startIndex As Long, ByVal replacementText As String) As String
     'Validate Input
     If startIndex < 0 Then
         Err.Raise 9, "Strings.Overwrite", "Start index cannot be less than zero."
@@ -695,7 +696,7 @@ End Function
 
 
 
-Public Function Remove(ByVal baseString As String, ByVal startIndex As Long, Optional ByVal count = 0) As String
+Public Function Remove(ByVal baseString As String, ByVal startIndex As Long, Optional ByVal count As Long = 0) As String
     If startIndex < 0 Then
         Err.Raise 9, "Strings.Remove", "Start index must be greater than 0"
     ElseIf count < 0 Then
@@ -703,15 +704,15 @@ Public Function Remove(ByVal baseString As String, ByVal startIndex As Long, Opt
     End If
     
     If count = 0 Then
-        Remove = strings.Left(baseString, count)
+        Remove = Strings.Left(baseString, count)
     Else
-        Remove = strings.Left(baseString, Len(baseString) - startIndex)
+        Remove = Strings.Left(baseString, Len(baseString) - startIndex)
     End If
 End Function
 
 
 
-Public Function RemoveFromEndWhile(ByVal baseString As String, ByVal stringToRemove As String)
+Public Function RemoveFromEndWhile(ByVal baseString As String, ByVal stringToRemove As String) As String
     If stringToRemove = vbNullString Or Len(stringToRemove) = 0 Then
         Err.Raise 9, "Strings.RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
     End If
@@ -719,8 +720,8 @@ Public Function RemoveFromEndWhile(ByVal baseString As String, ByVal stringToRem
     Dim charCount As Long: charCount = Len(stringToRemove)
     RemoveFromEndWhile = baseString
     
-    Do While strings.Right(RemoveFromEndWhile, charCount) = stringToRemove
-        RemoveFromEndWhile = strings.Left(baseString, Len(RemoveFromEndWhile) - charCount)
+    Do While Strings.Right(RemoveFromEndWhile, charCount) = stringToRemove
+        RemoveFromEndWhile = Strings.Left(baseString, Len(RemoveFromEndWhile) - charCount)
     Loop
 End Function
 
@@ -729,44 +730,89 @@ End Function
 Public Function RemoveNonPrintableChars(ByVal baseString As String) As String
     'Does not remove new line characters
     Dim idx As Long
-    Dim c As Long
+    Dim charIdx As Long
     Dim currentCharCode As Long
 
     RemoveNonPrintableChars = String$(Len(baseString), Chr$(0))
-    For idx = 1 To Len(text)
+    For idx = 1 To Len(baseString)
         currentCharCode = AscW2(Mid$(baseString, idx, 1))
         If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
-            c = c + 1
-            Mid$(RemoveNonPrintableChars, c, 1) = Mid$(baseString, idx, 1)
+            charIdx = charIdx + 1
+            Mid$(RemoveNonPrintableChars, charIdx, 1) = Mid$(baseString, idx, 1)
         End If
     Next idx
-    RemoveNonPrintableChars = Left$(RemoveNonPrintableChars, c)
+    RemoveNonPrintableChars = Left$(RemoveNonPrintableChars, charIdx)
 End Function
 
 
 
-Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As Comparison = Comparison.Default)
+'TODO - replace & replacebetween with compare and direction
+Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As Comparison = Comparison.Default) As String
     If oldString = vbNullString Then
         Err.Raise 9, "Strings.Replace", "String to replace cannot be null"
     End If
     
-    If compare Mod 2 = 1 Then 'TODO - .Replace case comparison probably isn't working
-        baseString = LCase$(baseString)
-        'stringToFind = LCase$(stringToFind)
+    Dim tempBase As String
+    Dim tempOld As String
+    If compare Mod 2 = 1 Then
+        tempBase = LCase$(tempBase)
+        tempOld = LCase$(tempOld)
     End If
 
-    If compare = Binary Or BinaryIgnoreCase Then
+    If compare = Binary Or compare = BinaryIgnoreCase Then
         Replace = VBA.Replace(baseString, oldString, newString, , , vbBinaryCompare)
-    ElseIf compare = text Or TextIngnoreCase Then
+    ElseIf compare = text Or compare = TextIngnoreCase Then
         Replace = VBA.Replace(baseString, oldString, newString, , , vbTextCompare)
-    ElseIf compare = Database Or DatabaseIgnoreCase Then
+    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
         Replace = VBA.Replace(baseString, oldString, newString, , , vbDatabaseCompare)
     Else
         Replace = VBA.Replace(baseString, oldString, newString)
     End If
     
 End Function
+'Public Sub Replace(ByVal oldString As String, ByVal newString As String, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
+'    Me.ReplaceBetween oldString, newString, 0, pBuffer.endIndex_, numberOfSubstitutions, direction
+'End Sub
 
+
+'Public Sub ReplaceBetween(ByVal oldString As String, ByVal newString As String, ByVal startIndex As Long, ByVal count As Long, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
+'    If oldString = vbNullString Then
+'        Err.Raise 5, "StringBuilder.Replace", "String to find cannot be null"
+'    ElseIf startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
+'        Err.Raise 9, "StringBuilder.Replace", "Invalid startIndex"
+'    ElseIf count < -1 Then
+'        Err.Raise 5, "StringBuilder.Replace", "Invalid length"
+'    ElseIf count = 0 Or numberOfSubstitutions = 0 Then
+'        Exit Sub 'Nothing to replace
+'    End If
+'
+'    Dim pos As Long: pos = startIndex
+'    Dim countSubs As Long
+'    Dim maxSubs As Long
+'    If numberOfSubstitutions = -1 Then
+'        maxSubs = 2147483647
+'    Else
+'        maxSubs = numberOfSubstitutions
+'    End If
+'
+'    If direction = FromStart Then
+'        Do While pos < count And countSubs < maxSubs
+'            pos = Me.IndexOf(oldString, pos)
+'            If pos = -1 Then Exit Sub 'No more replacements to make
+'            Me.Remove pos, Len(oldString)
+'            Me.Insert pos, newString, 1
+'            countSubs = countSubs + 1
+'        Loop
+'    Else
+'        Do While pos > pBuffer.endIndex_ - count And countSubs < maxSubs
+'            pos = Me.LastIndexOf(oldString, pos)
+'            If pos = -1 Then Exit Sub 'No more replacements to make
+'            Me.Remove pos, Len(oldString)
+'            Me.Insert pos, newString, 1
+'            countSubs = countSubs + 1
+'        Loop
+'    End If
+'End Sub
 
 
 
@@ -778,8 +824,8 @@ End Function
 
 
 
-Public Function StartsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = 0) As Boolean
-    If Comparison = 0 Then
+Public Function StartsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
+    If Comparison = Comparison.Default Then
         StartsWith = Left$(baseString, Len(stringToFind)) = stringToFind
     Else
         StartsWith = IndexOfBetween(baseString, stringToFind, 0, Len(stringToFind), compare) >= 0
@@ -787,7 +833,7 @@ Public Function StartsWith(ByVal baseString As String, ByVal stringToFind As Str
 End Function
 
 
-Public Function StartsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function StartsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As Comparison = Comparison.Default) As Boolean
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
         StartsWithAny = StartsWith(baseString, stringsToFind(idx), compare)
@@ -803,19 +849,19 @@ End Function
 '''</summary>
 '''<param name="baseString">String to manipulate.</param>
 '''<param name="startIndex">The zero-based starting character position of a substring in this instance.</param>
-'''<param name="startIndex">The number of characters in the substring.</param>
+'''<param name="count">The number of characters in the substring.</param>
 '''===================================================================================================================================================
 Public Function Substring(ByVal baseString As String, ByVal startIndex As Long, Optional ByVal count As Long = -1) As String
-    If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, TypeName(Me) & ".Substring", "Invalid startIndex"
+    If startIndex < 0 Or startIndex > Len(baseString) Then
+        Err.Raise 9, "Strings.Substring", "Invalid startIndex"
     ElseIf count < -1 Then
-        Err.Raise 5, TypeName(Me) & ".Substring", "Invalid length"
+        Err.Raise 5, "Strings.Substring", "Invalid length"
     ElseIf count = 0 Then
         Substring = baseString
         Exit Function
     End If
     
-    If count = -1 Then count = pBuffer.endIndex_ - startIndex
+    If count = -1 Then count = Len(baseString) - startIndex
     If count = -1 Then
         Substring = Mid$(baseString, startIndex + 1)
     Else
@@ -826,13 +872,13 @@ End Function
 
 
 Public Function SubstringBetween(ByVal baseString As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
-    Dim startPos As Long: startPos = strings.IndexOf(baseString, firstString, startIndex) + strings.Length(firstString)
-    Dim endPos As Long: endPos = strings.IndexOf(baseString, secondString, startPos)
-    SubstringBetween = strings.Substring(baseString, startPos, endPos - startPos)
+    Dim startPos As Long: startPos = Strings.IndexOf(baseString, firstString, startIndex) + Strings.Length(firstString)
+    Dim endPos As Long: endPos = Strings.IndexOf(baseString, secondString, startPos)
+    SubstringBetween = Strings.Substring(baseString, startPos, endPos - startPos)
 End Function
 
 
-Public Function Reverse(ByVal baseString As String)
+Public Function Reverse(ByVal baseString As String) As String
     Reverse = VBA.StrReverse$(baseString)
 End Function
 
@@ -855,20 +901,24 @@ End Function
 
 Public Function Split(ByVal baseString As String, ParamArray delimiters() As Variant) As String()
     Dim delims() As String
-    strings.ToStringArray delims, delimiters 'TODO - .Split bug here
-    
+    ReDim delims(0 To UBound(delimiters))
+    Dim idx As Long
+    For idx = 0 To UBound(delimiters)
+        delims(idx) = CStr(delimiters(idx))
+    Next idx
+
     Dim result() As String
-    ReDim result(0 To Len(baseString * 2)) 'worse case scenario?
-    
+    ReDim result(0 To Len(baseString) * 2) 'worse case scenario?
+
     Dim pos As Long
     Dim startPos As Long
-    Dim outIdx As Long
-    Dim idx As Long
     For idx = 0 To UBound(result)
         startPos = pos
-        pos = strings.IndexOfAny(searchString, delims, pos)
-        result(idx) = strings.Substring(baseString, startPos, pos - startPos)
+        pos = Strings.IndexOfAny(baseString, delims, pos)
+        result(idx) = Strings.Substring(baseString, startPos, pos - startPos) 'TODO - .Split indexes aren't working
+        pos = pos + 1
     Next idx
+    Split = result
 End Function
 
 
@@ -885,21 +935,20 @@ Public Function ToCharArray(ByVal baseString As String, Optional ByVal sourceInd
 End Function
 
 
-Public Function ToStringArray(ByRef outputArray() As String, ByRef inputArray() As Variant) As String()
+Public Sub ToStringArray(ByRef outputArray() As String, ByRef inputArray() As Variant)
     ReDim outputArray(LBound(inputArray) To UBound(inputArray))
-    Dim idx
+    Dim idx As Long
     On Error GoTo ErrorCannotConvertToString:
     For idx = 0 To UBound(outputArray)
         outputArray(idx) = CStr(inputArray(idx))
-        idx2 = idx2 + 1
     Next idx
     On Error GoTo 0
-    Exit Function
+    Exit Sub
     
 ErrorCannotConvertToString:
     Err.Raise 13, "Strings.ToStringArray", "Cannot convert element at "
     On Error GoTo 0
-End Function
+End Sub
 
 
 
@@ -936,42 +985,42 @@ End Function
 ' * @author Robert Todar <robert@roberttodar.com>
 ' * @example Truncate("This is a long sentence", 10)  -> "This is..."
 ' */
-Public Function Truncate(ByRef baseString As String, ByVal maxLength As Long, Optional ByVal extension = "...") As String
+Public Function Truncate(ByRef baseString As String, ByVal maxLength As Long, Optional ByVal extension As String = "...") As String
     If Len(baseString) <= maxLength Then
         Truncate = baseString
         Exit Function
     End If
 
-    Truncate = Left(baseString, maxLength - Len(extention)) & extention
+    Truncate = Left(baseString, maxLength - Len(extension)) & extension
 End Function
 
 'from https://stackoverflow.com/a/218199/10802255
-Public Function URLEncode(baseString As String, Optional spaceAsPlus As Boolean = False) As String
+Public Function URLEncode(ByVal baseString As String, Optional ByVal spaceAsPlus As Boolean = False) As String
     Dim stringLen As Long: stringLen = Len(baseString)
 
     If stringLen > 0 Then
         ReDim result(stringLen) As String
-        Dim i As Long
-        Dim charCode As Integer
+        Dim idx As Long
+        Dim charCode As Long
         Dim Char As String
         Dim space As String
 
         If spaceAsPlus Then space = "+" Else space = "%20"
 
-        For i = 1 To stringLen
-            Char = Mid$(baseString, i, 1)
+        For idx = 1 To stringLen
+            Char = Mid$(baseString, idx, 1)
             charCode = Asc(Char)
             Select Case charCode
             Case 97 To 122, 65 To 90, 48 To 57, 45, 46, 95, 126
-                result(i) = Char
+                result(idx) = Char
             Case 32
-                result(i) = space
+                result(idx) = space
             Case 0 To 15
-                result(i) = "%0" & Hex$(charCode)
+                result(idx) = "%0" & Hex$(charCode)
             Case Else
-                result(i) = "%" & Hex$(charCode)
+                result(idx) = "%" & Hex$(charCode)
             End Select
-        Next i
-        URLEncode = Join(result, "")
+        Next idx
+        URLEncode = Join(result, vbNullString)
     End If
 End Function
