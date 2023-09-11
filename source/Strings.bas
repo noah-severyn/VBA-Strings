@@ -46,15 +46,24 @@ End Enum
 'TODO - easy way to convert between array and collection to make the _Any functions more flexible?
 
 
-
-
-'AscW Fix
-'The AscW function in the built-in VBA.Strings module has a problem where it returns the correct bit pattern for an unsigned 16-bit integer which is
-'incorrect in VBA because VBA uses signed 16-bit integer. Thus, after reaching 32767 AscW will start returning negative numbers. To work around this
-'issue use one of the functions below.
+'''===================================================================================================================================================
+'''<summary>
+'''Returns a Long representing the character code corresponding to the first letter in a string.
+'''</summary>
+'''<param name="character">Any valid string. If the string length is greater than one, then only the first character is used for input.</param>
+'''<remarks>The AscW function in the built-in VBA.Strings module has a problem where it returns the correct bit pattern for an unsigned 16-bit integer which is
+'''incorrect in VBA because VBA uses signed 16-bit integer. Thus, after reaching 32767 AscW will start returning negative numbers.
+'''</remarks>
+'''===================================================================================================================================================
 '@Ignore UseMeaningfulName
-Public Function AscW2(ByVal Char As String) As Long
-    AscW2 = AscW(Char) And &HFFFF&
+Public Function AscW2(ByVal character As String) As Long
+    If Len(character) > 1 Then
+        character = Strings.Left(character, 1)
+    ElseIf Strings.IsNullOrEmpty(character) Then
+        Err.Raise 9, "Strings.AscW2", "String cannot be null or empty."
+    End If
+        
+    AscW2 = AscW(character) And &HFFFF&
 End Function
 
 
@@ -474,7 +483,13 @@ End Function
 
 
 
-
+'''===================================================================================================================================================
+'''<summary>
+'''Indicates whether the specified string is null (vbNullString).
+'''</summary>
+'''<param name="baseString">The string to test.</param>
+'''<returns>TRUE if the value parameter is null or an empty string; otherwise, FALSE.</returns>
+'''===================================================================================================================================================
 Public Function IsNullOrEmpty(ByVal baseString As String) As Boolean
     IsNullOrEmpty = baseString = vbNullString
 End Function
@@ -733,7 +748,7 @@ Public Function RemoveNonPrintableChars(ByVal baseString As String) As String
     Dim charIdx As Long
     Dim currentCharCode As Long
 
-    RemoveNonPrintableChars = String$(Len(baseString), Chr$(0))
+    RemoveNonPrintableChars = String$(Len(baseString), chr$(0))
     For idx = 1 To Len(baseString)
         currentCharCode = AscW2(Mid$(baseString, idx, 1))
         If currentCharCode > 31 Or currentCharCode = 13 Or currentCharCode = 10 Then
@@ -886,7 +901,7 @@ End Function
 
 
 Public Function ReplaceNonBreakingSpaces(ByVal baseString As String) As String
-    ReplaceNonBreakingSpaces = Replace(baseString, Chr$(160), " ")
+    ReplaceNonBreakingSpaces = Replace(baseString, chr$(160), " ")
 End Function
 
 
