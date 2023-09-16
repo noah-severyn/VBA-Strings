@@ -39,6 +39,15 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+'''<summary>
+'''Specifies the direction for processing the string.
+'''</summary>
+    '''<summary>
+    '''Start processing at the start of the string and move forward.
+    '''</summary>
+    '''<summary>
+    '''Start processing at the end of the string and move backwards.
+    '''</summary>
 Public Enum ProcessDirection
     FromStart
     FromEnd
@@ -79,19 +88,25 @@ End Property
 '''Gets the character at the specified character position in this instance.
 '''</summary>
 '''<param name="index">The position of the character.</param>
+'''<error cref="9">Index must be greater than zero.</error>
 '''<returns>The Unicode character at position index.</returns>
 '''=================================================================================================================================================== 'TODO add default value here
-Public Property Get Char(ByVal index As Long) As String
+Public Property Get Chars(ByVal index As Long) As String
+    If index < 0 Then
+        Err.Raise 9, "StringBuilder.Chars", "Index must be greater than zero."
+    End If
+
     If index > pBuffer.endIndex_ Then index = pBuffer.endIndex_
-    Char = Mid$(pBuffer.text_, index + 1, 1)
+    Chars = Mid$(pBuffer.text_, index + 1, 1)
 End Property
-'Public Property Let Char(ByVal index As Long) 'TODO
+'Public Property Let Chars(ByVal index As Long) 'TODO allow to set Chars
 '    mid#(pbuffer.text_,
 'End Property
 '''===================================================================================================================================================
 '''<summary>
 '''Sets the maximum capacity of this instance, regardless of the current memory allocation.
 '''</summary>
+'''<error cref="9">Maximum capacity must be greater than zero.</error>
 '''===================================================================================================================================================
 Public Property Let MaxCapacity(ByVal maximum As Long)
     If maximum <= 0 Then
@@ -181,10 +196,12 @@ End Sub
 '''Appends a copy of the specified strings to this instance.
 '''</summary>
 '''<param name="args()">One or more strings to append.</param>
+'''<error cref="9">Argument at a position could not be converted to a string.</error>
 '''===================================================================================================================================================
 Public Sub AppendMultiple(ParamArray args() As Variant)
     Dim idx As Long
     Dim idxInner As Long
+    On Error GoTo AppendInvalidArg
     For idx = LBound(args) To UBound(args)
         If IsArray(args(idx)) Then
             For idxInner = 0 To UBound(args(idx))
@@ -194,6 +211,11 @@ Public Sub AppendMultiple(ParamArray args() As Variant)
             Append CStr(args(idx))
         End If
     Next idx
+    On Error GoTo 0
+    Exit Function
+    
+AppendInvalidArg:
+    Err.Raise 5, "StringBuilder.AppendJoin", "Argument at position " & idx * 2 + 1 & " could not be converted to a string."
 End Sub
 
 
@@ -203,7 +225,8 @@ End Sub
 '''Concatenates the strings of the provided array, using the specified separator between each string, then appends the result to the current instance of the string builder.
 '''</summary>
 '''<param name="separator">Separator to append in between each value.</param>
-'''<param name="values()">One or more strings to append.</param>
+'''<param name="args()">One or more strings to append.</param>
+'''<error cref="9">Argument at a position could not be converted to a string.</error>
 '''===================================================================================================================================================
 Public Sub AppendJoin(ByVal separator As String, ByRef args() As String)
     Dim idx As Long
@@ -234,7 +257,7 @@ End Sub
 '''<summary>
 '''Appends the default line terminator, or a copy of a specified string and the default line terminator, to the end of this instance.
 '''</summary>
-'''<param name="text">The string to append.</param>
+'''<param name="text">The string to append. If this is omitted then only a new line is appended.</param>
 '''===================================================================================================================================================
 Public Sub AppendLine(Optional ByVal text As String)
     Append vbNewLine
@@ -247,7 +270,7 @@ End Sub
 
 '''===================================================================================================================================================
 '''<summary>
-'''Removes all characters from the current StringBuilder instance.
+'''Removes all characters from the current instance.
 '''</summary>
 '''===================================================================================================================================================
 Public Sub Clear()
@@ -257,23 +280,23 @@ Public Sub Clear()
 End Sub
 
 
-Public Function Contains(ByVal stringToFind As String, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function Contains(ByVal stringToFind As String, Optional ByVal compare As StringComparison = 0) As Boolean
     Contains = IndexOf(Me.ToString, stringToFind, , compare) >= 0
 End Function
 
 
-Public Function ContainsAfter(ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAfter(ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As StringComparison = 0) As Boolean
     ContainsAfter = IndexOf(Me.ToString, stringToFind, startIndex, compare) >= 0
 End Function
 
 
-Public Function ContainsBefore(ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsBefore(ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As StringComparison = 0) As Boolean
     Dim newString As String: newString = Left(Me.ToString, endIndex)
     ContainsBefore = IndexOf(newString, stringToFind, , compare) >= 0
 End Function
 
 
-Public Function ContainsAny(ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As Comparison = 0) As Boolean
+Public Function ContainsAny(ByVal stringsToFind As Variant, Optional ByVal startIndex As Long, Optional ByVal compare As StringComparison = 0) As Boolean
     Dim searchString As String: searchString = Me.ToString
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
@@ -283,7 +306,7 @@ Public Function ContainsAny(ByVal stringsToFind As Variant, Optional ByVal start
 End Function
 
 
-Public Function CountSubstring(ByVal substringToFind As String, Optional ByVal compare As Comparison = 0) As Long
+Public Function CountSubstring(ByVal substringToFind As String, Optional ByVal compare As StringComparison = 0) As Long
     Dim baseString As String: baseString = Me.ToString
     Dim locn As Long: locn = IndexOf(baseString, substringToFind, locn)
 
@@ -296,7 +319,7 @@ End Function
 
 
 '0-based index
-Public Function IndexOf(ByVal searchString As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As Comparison = 0) As Long
+Public Function IndexOf(ByVal searchString As String, Optional ByVal startPos As Long = 0, Optional ByVal compare As StringComparison = 0) As Long
     If startPos < 0 Then
         Err.Raise 9, "StringBuilder.IndexOf", "Start position must be greater than zero."
     ElseIf startPos > Len(pBuffer.endIndex_) Then
@@ -330,12 +353,14 @@ End Function
 '''<param name="startIndex">The position in this instance where insertion begins.</param>
 '''<param name="text">The string to insert.</param>
 '''<param name="repetitions">The number of times to insert value.</param>
+'''<error cref="9">Start index must be greater than zero.</error>
+'''<error cref="9">Number of repetitions cannot be less than 0.</error>
 '''===================================================================================================================================================
 Public Sub Insert(ByVal startIndex As Long, ByVal text As String, Optional ByVal repetitions As Long = 1)
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, "StringBuilder.Insert", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.Insert", "Start index must be greater than zero."
     ElseIf repetitions < 1 Then
-        Err.Raise 9, "StringBuilder.Insert", "Number of repetitions cannot be less than 0"
+        Err.Raise 9, "StringBuilder.Insert", "Number of repetitions cannot be less than 0."
     End If
     
     If repetitions > 1 Then
@@ -400,7 +425,7 @@ Interpolate2InvalidArg:
 End Sub
 
 
-Public Function LastIndexOf(ByVal searchString As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As Comparison = 0) As Long
+Public Function LastIndexOf(ByVal searchString As String, Optional ByVal startPos As Long = -2, Optional ByVal compare As StringComparison = 0) As Long
     Dim tempString As String: tempString = Me.Substring(startPos, pBuffer.endIndex_ - startPos)
     If compare Mod 2 = 1 Then
         searchString = LCase$(searchString)
@@ -429,12 +454,14 @@ End Function
 '''</summary>
 '''<param name="startIndex">The zero-based position in this instance where removal begins.</param>
 '''<param name="count">TThe number of characters to remove.</param>
+'''<error cref="9">Start index must be greater than zero.</error>
+'''<error cref="5">Count must be greater than zero.</error>
 '''===================================================================================================================================================
 Public Sub Remove(ByVal startIndex As Long, ByVal count As Long)
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, "StringBuilder.Delete", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.Delete", "Start index must be greater than zero."
     ElseIf count < 0 Then
-        Err.Raise 5, "StringBuilder.Delete", "Invalid count"
+        Err.Raise 5, "StringBuilder.Delete", "Count must be greater than zero."
     ElseIf count = 0 Then
         Exit Sub 'Nothing to delete
     End If
@@ -463,10 +490,14 @@ End Sub
 '''Removes the specified number of characters from the end this instance.
 '''</summary>
 '''<param name="count">The number of characters to remove.</param>
+'''<error cref="5">Count must be greater than zero.</error>
+'''<error cref="5">Count cannot be greater than the current length of this instance.</error>
 '''===================================================================================================================================================
 Public Sub RemoveFromEnd(ByVal count As Long)
-    If count < 0 Or count > pBuffer.endIndex_ Then
-        Err.Raise 5, "StringBuilder.RemoveFromEnd", "Invalid count"
+    If count < 0 Then
+        Err.Raise 5, "StringBuilder.RemoveFromEnd", "Count must be greater than zero."
+    ElseIf count > pBuffer.endIndex_ Then
+        Err.Raise 5, "StringBuilder.RemoveFromEnd", "Count cannot be greater than the current length of this instance."
     ElseIf count = 0 Then
         Exit Sub 'Nothing to delete
     End If
@@ -481,10 +512,11 @@ End Sub
 '''Removes all instances of the specified characters from the end this instance until no more are remaining.
 '''</summary>
 '''<param name="stringToRemove">The text to remove.</param>
+'''<error cref="9">String to remove must have length greater than 0 and cannot be null.</error>
 '''===================================================================================================================================================
 Public Sub RemoveFromEndWhile(ByVal stringToRemove As String)
     If stringToRemove = vbNullString Or Len(stringToRemove) = 0 Then
-        Err.Raise 9, "StringBuilder.RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null"
+        Err.Raise 9, "StringBuilder.RemoveFromEndWhile", "String to remove must have length greater than 0 and cannot be null."
     End If
     
     Dim charCount As Long: charCount = Len(stringToRemove)
