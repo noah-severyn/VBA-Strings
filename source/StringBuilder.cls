@@ -656,9 +656,12 @@ Public Sub ReplaceNonBreakingSpaces()
 End Sub
 
 
-'****************************************************************************************************************************************************
-'Reverses the contained string
-'****************************************************************************************************************************************************
+'''===================================================================================================================================================
+'''<summary>
+'''Returns a string in which the character order of this instance is reversed.
+'''</summary>
+'''<returns>A reversed string.</returns>
+'''===================================================================================================================================================
 Public Sub Reverse()
     If pBuffer.endIndex_ > 0 Then
         Me.Overwrite 1, pBuffer.endIndex_, VBA.StrReverse(Me.Value)
@@ -672,13 +675,16 @@ End Sub
 '''Retrieves a substring from this instance. The substring starts at a specified character position and continues to the end of the string or to the specified length.
 '''</summary>
 '''<param name="startIndex">The zero-based starting character position of a substring in this instance.</param>
-'''<param name="startIndex">The number of characters in the substring.</param>
+'''<param name="count">The number of characters in the substring.</param>
+'''<error cref="9">Start index must be greater than zero.</error>
+'''<error cref="9">Count must be greater than zero.</error>
+'''<returns>A string that is equivalent to the substring that begins at startIndex of baseString, the baseString if count is 0, or vbnullstring if startIndex is equal to the length of this instance.</returns>
 '''===================================================================================================================================================
 Public Function Substring(ByVal startIndex As Long, Optional ByVal count As Long = -1) As String
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, "StringBuilder.Substring", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.ToString", "Start index must be greater than zero."
     ElseIf count < -1 Then
-        Err.Raise 5, "StringBuilder.Substring", "Invalid length"
+        Err.Raise 9, "StringBuilder.ToString", "Count of chars must be greater than zero."
     ElseIf count = 0 Then
         Exit Function
     End If
@@ -697,10 +703,33 @@ Public Function Substring(ByVal startIndex As Long, Optional ByVal count As Long
 End Function
 
 
-
+'''===================================================================================================================================================
+'''<summary>
+'''Retrieves a substring from this instance. The substring starts at the end of firstString and ends at the start location of secondString, optionally beginning the search for firstString as startIndex.
+'''</summary>
+'''<param name="baseString">Any valid string.</param>
+'''<param name="firstString">String marking the start of the substring.</param>
+'''<param name="secondString">String marking the end of the substring</param>
+'''<error cref="9">Start index must be greater than zero.</error>
+'''<error cref="9">Value of first string was not found in the base string.</error>
+'''<error cref="9">Value of second string was not found in the base string.</error>
+'''<param name="startIndex">The zero-based starting character position to begin searching for firstString at.</param>
+'''==================================================================================================================================================
 Public Function SubstringBetween(ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
+    If startIndex < 0 Then
+        Err.Raise 9, "StringBuilder.SubstringBetween", "Start index must be greater than zero."
+    End If
     Dim startPos As Long: startPos = Me.IndexOf(firstString, startIndex) + Len(firstString)
+    If startPos = -1 Then
+        Err.Raise 9, "StringBuilder.SubstringBetween", "Value of first string was not found in the base string."
+    End If
     Dim endPos As Long: endPos = Me.IndexOf(secondString, startPos)
+    If endPos = -1 Then
+        Err.Raise 9, "Strings.SubstringBetween", "Value of second string was not found in the base string."
+    End If
+    
+    
+    
     SubstringBetween = Me.Substring(startPos, endPos - startPos)
 End Function
 
@@ -708,16 +737,23 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Converts the value of a StringBuilder to a String.
+'''Converts the value of this instance to a String.
 '''</summary>
 '''<param name="startIndex">The starting position of the substring in this instance.</param>
-'''<param name="count">The length of the substring.</param>
+'''<param name="count">The length of the substring. If count + startIndex is longer than the length of this instance then the count is adjusted to the maximum allowed length.</param>
+'''<error cref="9">Start index must be greater than zero.</error>
+'''<error cref="9">Count of chars must be greater than zero.</error>
+'''<returns>A string whose value is the same as the specified substring of this instance.</returns>
+'''<remarks>You must call the ToString method to convert the StringBuilder object to a String object before you can pass the string represented by the
+'''StringBuilder object to a method that has a String parameter or display it in the user interface.</remarks>
 '''===================================================================================================================================================
 Public Function ToString(Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0) As String
     If startIndex < 0 Or startIndex > pBuffer.endIndex_ Then
-        Err.Raise 9, "StringBuilder.ToString", "Invalid startIndex"
+        Err.Raise 9, "StringBuilder.ToString", "Start index must be greater than zero."
     ElseIf count < 0 Then
-        Err.Raise 5, "StringBuilder.ToString", "Invalid length"
+        Err.Raise 9, "StringBuilder.ToString", "Count of chars must be greater than zero."
+    ElseIf startIndex + count < pBuffer.endIndex_ Then
+        count = pBuffer.endIndex_ - startIndex
     ElseIf pBuffer.endIndex_ = 0 Then
         ToString = vbNullString
         Exit Function
