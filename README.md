@@ -9,6 +9,8 @@ All functions are additionally designed to use 0-based strings, providing an imp
 ## Usage and Documentation
 Refer to the [About Strings](/docs/AboutStrings.md) and the [About StringBuilder](/docs/AboutStringBuilder.md) documentation.
 
+Note this library is technically incomplete and may contain implementation errors - I have not had time to test all of the functions yet. I will at some point. If you find errors, pull requests are welcomed.
+
 
 ## Inspiration & Reference
 The functions in this library are based on .NET's **[String](https://learn.microsoft.com/en-us/dotnet/api/system.string?view=net-7.0)** and **[StringBuilder](https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-7.0)** classes. This library also incorporates  a multitude of string functions included in other VBA string-related repositories, including Christian Buse's [VBA-StringBuffer](https://github.com/cristianbuse/VBA-StringBuffer), Robert Todar's [VBA-Strings](https://github.com/todar/VBA-Strings), Bruce Mcpherson's [cStringChunker](https://gist.github.com/brucemcpherson/5102369), Peter Roach's [clsStringBuilder](https://github.com/PeterRoach/VBA/tree/main/clsStringBuilder) and [modString](https://github.com/PeterRoach/VBA/tree/main/modString), Daniele Giaquinto's [StringType](https://github.com/exSnake/VBTools/blob/master/StringType.cls), Frank Schwab's [StringBuilder](https://github.com/xformerfhs/VBAUtilities/tree/master/StringHandling), and Greedquest's [VBA-Gems](https://github.com/Greedquest/VBA-Gems).
