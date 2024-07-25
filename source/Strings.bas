@@ -649,13 +649,14 @@ Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Va
     
     Dim idx As Long
     Dim result As Long
-    IndexOfAny = 999999999
+    IndexOfAny = 99999999
     For idx = 0 To maxLoops - 1
         result = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, count, compare)
         If result < IndexOfAny And result <> -1 Then
             IndexOfAny = result
         End If
     Next idx
+    If IndexOfAny = 99999999 Then IndexOfAny = -1
 End Function
 
 
@@ -829,12 +830,14 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Reports the zero-based index of the last occurrence of the specified string in the base string object.
+'''Reports the zero-based index position of the last occurrence of a specified string within a string. The search starts at a specified character position
+'''and proceeds backward toward the beginning of the string for the specified number of character positions. A parameter specifies the type of comparison
+'''to perform when searching for the specified string.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="stringToFind">The string to seek.</param>
 '''<param name="startIndex">The search starting position.</param>
-'''<param name="count">The number of character positions to examine.</param>
+'''<param name="length">The number of character positions to examine.</param>
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<error cref="9">Start index must be greater than zero.</error>
 '''<error cref="9">Start index must be less than the base string length.</error>
@@ -848,9 +851,7 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
     ElseIf stringToFind = vbNullString Then
         LastIndexOf = -1
         Exit Function
-    ElseIf count = -1 Then
-        count = Len(baseString) - startIndex
-    ElseIf startIndex + count > Len(baseString) Then
+    ElseIf count = -1 Or startIndex + count > Len(baseString) Then
         count = Len(baseString) - startIndex
     End If
     
@@ -858,23 +859,33 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
         baseString = LCase$(baseString)
         stringToFind = LCase$(stringToFind)
     End If
+    
+    Dim substr As String
+    If startIndex <> -2 Then
+        substr = Mid$(baseString, startIndex - count, count)
+    Else
+        substr = baseString
+    End If
 
     If compare = Binary Or compare = BinaryIgnoreCase Then
-        LastIndexOf = InStrRev(baseString, stringToFind, startIndex + 1, vbBinaryCompare) - 1
+        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbBinaryCompare) - 1
     ElseIf compare = text Or compare = TextIngnoreCase Then
-        LastIndexOf = InStrRev(baseString, stringToFind, startIndex + 1, vbTextCompare) - 1
+        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbTextCompare) - 1
     ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        LastIndexOf = InStrRev(baseString, stringToFind, startIndex + 1, vbDatabaseCompare) - 1
+        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbDatabaseCompare) - 1
     Else
-        LastIndexOf = InStrRev(baseString, stringToFind) - 1
+        LastIndexOf = InStrRev(substr, stringToFind) - 1
     End If
+    LastIndexOf = LastIndexOf + startIndex - count
 End Function
 
 
 
 '''===================================================================================================================================================
 '''<summary>
-'''Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.
+'''Reports the zero-based index position of the last occurrence of any of the specified strings within a string. The search starts at a specified character
+'''position and proceeds backward toward the beginning of the string for the specified number of character positions. A parameter specifies the type of
+'''comparison to perform when searching for the specified string.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="stringToFind">An array of strings to seek.</param>
@@ -885,7 +896,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based starting index position of any element in stringsToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal length As Long = 0) As Long
+Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
     Dim maxLoops As Long
     If startIndex < 0 Then
         Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be greater than zero."
@@ -907,20 +918,20 @@ Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind A
         maxLoops = stringsToFind.count
     End If
     
-    If length = -1 Then
-        length = Len(baseString) - startIndex
-    ElseIf length = 0 Then
-        length = Len(baseString)
+    If count = -1 Then
+        count = Len(baseString) - startIndex
+    ElseIf count = 0 Then
+        count = Len(baseString)
     End If
-    If startIndex + length > Len(baseString) Then
-        length = Len(baseString) - startIndex + 1
+    If startIndex + count > Len(baseString) Then
+        count = Len(baseString) - startIndex + 1
     End If
     
     Dim idx As Long
     Dim result As Long
     LastIndexOfAny = -1
     For idx = 0 To maxLoops - 1
-        result = LastIndexOf(baseString, stringsToFind(idx), startIndex + 1, length)
+        result = LastIndexOf(baseString, stringsToFind(idx), startIndex + 1, count, compare)
         If result > LastIndexOfAny And result <> -1 Then
             LastIndexOfAny = result
         End If
@@ -1661,21 +1672,43 @@ End Function
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="lineWidth">Approximately the length of a line in number of characters.</param>
-'''<param name="tolerance">The final line with will be at most plus or minus this tolerance.</param>
+'''<param name="newLineChars">Characters to use as the new line separators. Default is `vbNewLine`.</param>
+'''<param name="chopAtExactly">If specified, all traditional delimiters are ignored and each line will be exactly lineWidth characters wide. Default is FALSE.</param>
+'''<param name="tolerance">Specifies the limit for how far away from the lineWidth to find the nearest wrap location. Default is 4 characters.</param>
 '''<returns>Wrapped text delineated with a new line character</returns>
 '''===================================================================================================================================================
-Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal tolerance As Long = 4) As String
-    Dim separators As Variant: separators = Array(" ", "-", "/", "\")
+Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal newLineChars As String = vbNewLine, Optional ByVal chopAtExactly As Boolean = False, _
+    Optional ByVal tolerance As Long = 4) As String
+    'TODO - allow for indents:
+    'initial_indent: (default: '') String that will be prepended to the first line of wrapped output. Counts towards the length of the first line. The empty string is not indented.
+    'subsequent_indent: (default: '') String that will be prepended to all lines of wrapped output except the first. Counts towards the length of each line except the first.
+    If chopAtExactly Then
+        Dim endPos As Long
+        Do
+            endPos = endPos + lineWidth
+            Wrap = Wrap & Mid$(baseString, endPos - lineWidth + 1, lineWidth) & newLineChars
+        Loop While endPos < Len(baseString)
+        Wrap = Wrap & Mid$(baseString, endPos + 1)
+        Exit Function
     
-    Dim nextWrapLocn As Long
-    Dim wrappedText As String
-    Dim pos As Long
-    Do
-        nextWrapLocn = Strings.IndexOfAny(baseString, separators, nextWrapLocn + lineWidth - tolerance)
-        wrappedText = wrappedText & Mid$(baseString, pos + 1, nextWrapLocn - pos) & vbNewLine
-        pos = nextWrapLocn
-    Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth - tolerance < Len(baseString)
-    wrappedText = wrappedText & Mid$(baseString, pos + 1)
-    
-    Debug.Print wrappedText
+    Else
+        Dim pos As Long
+        Dim separators As Variant: separators = Array(" ", "-", "/", "\")
+        Dim nextWrapLocn As Long
+        Dim firstWrapLocn As Long
+        Dim lastWrapLocn As Long
+        Do
+            firstWrapLocn = Strings.IndexOfAny(baseString, separators, nextWrapLocn + lineWidth - tolerance)
+            lastWrapLocn = Strings.LastIndexOfAny(baseString, separators, nextWrapLocn + lineWidth + tolerance, tolerance * 2)
+            nextWrapLocn = IIf(firstWrapLocn > lastWrapLocn, firstWrapLocn, lastWrapLocn)
+'            If Mid$(baseString, nextWrapLocn, 1) = "\" Or Mid$(baseString, nextWrapLocn, 1) = "/" Then
+'                nextWrapLocn = nextWrapLocn + 1 'Edge case to not split in between double slash escape sequences
+'            End If
+            
+            Wrap = Wrap & Mid$(baseString, pos + 1, nextWrapLocn - pos) & newLineChars
+            pos = nextWrapLocn
+        Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth - tolerance < Len(baseString)
+        Wrap = Wrap & Mid$(baseString, pos + 1)
+        Exit Function
+    End If
 End Function
