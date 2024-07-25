@@ -598,6 +598,7 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
     Else
         IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind) - 1
     End If
+    If IndexOf <> -1 Then IndexOf = IndexOf + startPos
 End Function
 
 
@@ -647,9 +648,13 @@ Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Va
     End If
     
     Dim idx As Long
+    Dim result As Long
+    IndexOfAny = 999999999
     For idx = 0 To maxLoops - 1
-        IndexOfAny = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, count, compare)
-        If IndexOfAny > 0 Then Exit Function
+        result = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, count, compare)
+        If result < IndexOfAny And result <> -1 Then
+            IndexOfAny = result
+        End If
     Next idx
 End Function
 
@@ -836,7 +841,7 @@ End Function
 '''<returns>The zero-based starting index position of the stringToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
 Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = -2, Optional ByVal count As Long = -1, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
-    If startIndex < 0 Then
+    If startIndex < 0 And startIndex <> -2 Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be less than the base string length."
@@ -845,7 +850,7 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
         Exit Function
     ElseIf count = -1 Then
         count = Len(baseString) - startIndex
-    ElseIf startPos + count > Len(baseString) Then
+    ElseIf startIndex + count > Len(baseString) Then
         count = Len(baseString) - startIndex
     End If
     
@@ -861,7 +866,7 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
     ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
         LastIndexOf = InStrRev(baseString, stringToFind, startIndex + 1, vbDatabaseCompare) - 1
     Else
-        LastIndexOf = InStrRev(baseString, stringToFind, startIndex + 1) - 1
+        LastIndexOf = InStrRev(baseString, stringToFind) - 1
     End If
 End Function
 
@@ -880,12 +885,45 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based starting index position of any element in stringsToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startPos As Long = 0, Optional ByVal Length As Long = 0) As Long
-    If Length = 0 Then Length = Len(baseString)
+Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal length As Long = 0) As Long
+    Dim maxLoops As Long
+    If startIndex < 0 Then
+        Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be greater than zero."
+    ElseIf startIndex > Len(baseString) Then
+        Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be less than the base string length."
+    ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
+        Err.Raise 9, "Strings.LastIndexOfAny", "The 'stringsToFind' parameter is not an array or collection."
+    ElseIf VBA.IsArray(stringsToFind) Then
+        If UBound(stringsToFind) - LBound(stringsToFind) + 1 = 0 Then
+            LastIndexOfAny = startIndex
+            Exit Function
+        End If
+        maxLoops = UBound(stringsToFind) - LBound(stringsToFind) + 1
+    ElseIf TypeName(stringsToFind) = "Collection" Then
+        If stringsToFind.count = 0 Then
+            LastIndexOfAny = startIndex
+            Exit Function
+        End If
+        maxLoops = stringsToFind.count
+    End If
+    
+    If length = -1 Then
+        length = Len(baseString) - startIndex
+    ElseIf length = 0 Then
+        length = Len(baseString)
+    End If
+    If startIndex + length > Len(baseString) Then
+        length = Len(baseString) - startIndex + 1
+    End If
+    
     Dim idx As Long
-    For idx = 0 To UBound(stringsToFind)
-        LastIndexOfAny = LastIndexOfBetween(baseString, stringsToFind(idx), startPos + 1, Length)
-        If LastIndexOfAny > 0 Then Exit Function
+    Dim result As Long
+    LastIndexOfAny = -1
+    For idx = 0 To maxLoops - 1
+        result = LastIndexOf(baseString, stringsToFind(idx), startIndex + 1, length)
+        If result > LastIndexOfAny And result <> -1 Then
+            LastIndexOfAny = result
+        End If
     Next idx
 End Function
 
@@ -1613,4 +1651,31 @@ Public Function URLEncode(ByVal baseString As String, Optional ByVal spaceAsPlus
         Next idx
         URLEncode = Join(result, vbNullString)
     End If
+End Function
+
+
+
+'''===================================================================================================================================================
+'''<summary>
+'''Wraps a paragraph of text so each line is at most lineWidth characters long, plus or minus a tolerance
+'''</summary>
+'''<param name="baseString">Any valid string.</param>
+'''<param name="lineWidth">Approximately the length of a line in number of characters.</param>
+'''<param name="tolerance">The final line with will be at most plus or minus this tolerance.</param>
+'''<returns>Wrapped text delineated with a new line character</returns>
+'''===================================================================================================================================================
+Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal tolerance As Long = 4) As String
+    Dim separators As Variant: separators = Array(" ", "-", "/", "\")
+    
+    Dim nextWrapLocn As Long
+    Dim wrappedText As String
+    Dim pos As Long
+    Do
+        nextWrapLocn = Strings.IndexOfAny(baseString, separators, nextWrapLocn + lineWidth - tolerance)
+        wrappedText = wrappedText & Mid$(baseString, pos + 1, nextWrapLocn - pos) & vbNewLine
+        pos = nextWrapLocn
+    Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth - tolerance < Len(baseString)
+    wrappedText = wrappedText & Mid$(baseString, pos + 1)
+    
+    Debug.Print wrappedText
 End Function
