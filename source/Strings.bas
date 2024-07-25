@@ -362,9 +362,6 @@ End Function
 
 
 
-
-
-
 '''===================================================================================================================================================
 '''<summary>
 '''Copies each character in the base string to a new array.
@@ -372,10 +369,10 @@ End Function
 '''<param name="baseString">Any valid string.</param>
 '''<returns>An array of string characters from the base string.</returns>
 '''===================================================================================================================================================
-Public Function CopyToCharArray(ByVal baseString As String)
+Public Function ConvertToCharArray(ByVal baseString As String) As Variant
     Dim idx As Long
-    Dim characters() As String
-    ReDim characters(0 To Len(baseString))
+    Dim characters As Variant
+    ReDim characters(0 To Len(baseString) - 1)
     
     For idx = 1 To Len(baseString)
         characters(idx - 1) = Mid$(baseString, idx, 1)
@@ -392,15 +389,20 @@ End Function
 '''<param name="baseString">Any valid string.</param>
 '''<param name="sourceIndex">The index of the first character in the base string to copy.</param>
 '''<param name="charArray">An array of characters to which characters in the base string are copied.</param>
-'''<param name="destinationIndex">The index in destination at which the copy operation begins.</param>
-'''<param name="count">The number of characters in this instance to copy to destination.</param>
+'''<param name="destinationIndex" optional="true">The index in destination at which the copy operation begins.</param>
+'''<param name="count" optional="true">The number of characters in this instance to copy to destination.</param>
 '''===================================================================================================================================================
-Public Sub CopyToCharArrayFrom(ByVal baseString As String, ByVal sourceIndex As Long, ByRef charArray() As String, ByVal destinationIndex As Long, ByVal count As Long)
-    Dim idx As Long
+Public Sub CopyToCharArray(ByVal baseString As String, ByVal sourceIndex As Long, ByRef charArray As Variant, Optional ByVal destinationIndex As Long = 0, Optional ByVal count As Long = 0)
+    Dim pos As Long
+    If Len(baseString) - 1 + destinationIndex - 1 > UBound(charArray) - LBound(charArray) Then
+        ReDim Preserve charArray(0 To Len(baseString) + destinationIndex - 1)
+    End If
+    
+    If count <= 0 Then count = Len(baseString)
     Do
-        charArray(destinationIndex + idx) = Mid$(baseString, sourceIndex + idx + 1, 1)
-        idx = idx + 1
-    Loop While idx < count
+        charArray(destinationIndex + pos) = Mid$(baseString, sourceIndex + pos + 1, 1)
+        pos = pos + 1
+    Loop While pos < count
 End Sub
 
 
@@ -567,6 +569,7 @@ End Function
 '''<returns>The zero-based index position of stringToFind from the start of the base string if that string is found, or -1 if it is not. If stringToFind is null, the return value is startIndex.</returns>
 '''===================================================================================================================================================
 Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+    Dim startPos As Long
     If startIndex < 0 Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
@@ -576,7 +579,7 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
         Exit Function
     ElseIf count = -1 Then
         count = Len(baseString) - startIndex
-    ElseIf startPos + count > Len(baseString) Then
+    ElseIf startIndex + count > Len(baseString) + 1 Then
         count = Len(baseString) - startIndex
     End If
     
@@ -584,16 +587,16 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
         baseString = LCase$(baseString)
         stringToFind = LCase$(stringToFind)
     End If
-    startPos = startPos + 1 'Adjustment for the 1-based strings in VBA
+    startPos = startIndex + 1 'Adjustment for the 1-based strings in VBA
 
     If compare = Binary Or compare = BinaryIgnoreCase Then
-        IndexOf = InStr(startIndex + 1, Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
+        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
     ElseIf compare = text Or compare = TextIngnoreCase Then
-        IndexOf = InStr(startIndex + 1, Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
+        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
     ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        IndexOf = InStr(startIndex + 1, Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
+        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
     Else
-        IndexOf = InStr(startIndex + 1, Mid$(baseString, startPos, count), stringToFind) - 1
+        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind) - 1
     End If
 End Function
 
@@ -604,7 +607,7 @@ End Function
 '''Reports the zero-based index of the first occurrence in the base string of any string in a specified array of strings. The search starts at a specified character position and examines a specified number of character positions.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
-'''<param name="stringsToFind">An array of strings to seek.</param>
+'''<param name="stringsToFind">An array or collection of strings to seek.</param>
 '''<param name="startIndex">The search starting position.</param>
 '''<param name="count">The number of character positions to examine.</param>
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
@@ -612,24 +615,40 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based index position of the first occurrence in this instance where any string in stringsToFind was found; -1 if no string in stringsToFind was found.</returns>
 '''===================================================================================================================================================
-Public Function IndexOfAny(ByVal baseString As String, ByRef stringsToFind() As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+    Dim maxLoops As Long
     If startIndex < 0 Then
-        Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
+        Err.Raise 9, "Strings.IndexOfAny", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
-        Err.Raise 9, "Strings.IndexOf", "Start index must be less than the base string length."
-    ElseIf stringToFind = vbNullString Then
-        IndexOf = startIndex
-        Exit Function
-    ElseIf count = -1 Then
-        count = Len(baseString) - startIndex
-    ElseIf startPos + count > Len(baseString) Then
-        count = Len(baseString) - startIndex
+        Err.Raise 9, "Strings.IndexOfAny", "Start index must be less than the base string length."
+    ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
+        Err.Raise 9, "Strings.IndexOfAny", "The 'stringsToFind' parameter is not an array or collection."
+    ElseIf VBA.IsArray(stringsToFind) Then
+        If UBound(stringsToFind) - LBound(stringsToFind) + 1 = 0 Then
+            IndexOfAny = startIndex
+            Exit Function
+        End If
+        maxLoops = UBound(stringsToFind) - LBound(stringsToFind) + 1
+    ElseIf TypeName(stringsToFind) = "Collection" Then
+        If stringsToFind.count = 0 Then
+            IndexOfAny = startIndex
+            Exit Function
+        End If
+        maxLoops = stringsToFind.count
     End If
     
-    If count = 0 Then count = Len(baseString)
+    If count = -1 Then
+        count = Len(baseString) - startIndex
+    ElseIf count = 0 Then
+        count = Len(baseString)
+    End If
+    If startIndex + count > Len(baseString) Then
+        count = Len(baseString) - startIndex + 1
+    End If
+    
     Dim idx As Long
-    For idx = 0 To UBound(stringsToFind)
-        IndexOfAny = Strings.IndexOf(baseString, stringsToFind(idx), startIndex, count, compare)
+    For idx = 0 To maxLoops - 1
+        IndexOfAny = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, count, compare)
         If IndexOfAny > 0 Then Exit Function
     Next idx
 End Function
@@ -758,8 +777,16 @@ End Function
 '''<param name="stringsToJoin">An array that contains the elements to concatenate.</param>
 '''<returns>A string that consists of the elements in value delimited by the separator string.</returns>
 '''===================================================================================================================================================
-Public Function Join(ByVal separator As String, ByRef stringsToJoin() As String) As String
-    Join = VBA.Join(stringsToJoin, separator)
+Public Function Join(ByVal separator As String, ByVal stringsToJoin As Variant) As String
+    If VBA.IsArray(stringsToJoin) Then
+        Join = VBA.Join(stringsToJoin, separator)
+    Else
+        Dim idx As Long
+        For idx = 1 To stringsToJoin.count
+            Join = Join & stringsToJoin(idx) & separator
+        Next idx
+        Join = Left$(Join, Len(Join) - 1)
+    End If
 End Function
 
 
@@ -774,17 +801,17 @@ End Function
 '''<param name="count">The number of elements from stringsToJoin to concatenate, starting with the element in the startIndex position.</param>
 '''<returns>A string that consists of count elements of stringsToJoin starting at startIndex delimited by the separator character.</returns>
 '''===================================================================================================================================================
-Public Function JoinBetween(ByVal separator As String, ByRef stringsToJoin() As String, ByVal startIndex As Long, ByVal count As Long) As String
+Public Function JoinBetween(ByVal separator As String, ByVal stringsToJoin As Variant, ByVal startIndex As Long, ByVal count As Long) As String
     If startIndex < 0 Then
-        Err.Raise 9, "Strings.JoinBetween", "Invalid startIndex"
+        Err.Raise 9, "Strings.JoinBetween", "The startIndex must be greater than zero."
     ElseIf count < 0 Then
-        Err.Raise 5, "Strings.JoinBetween", "Invalid count"
+        Err.Raise 5, "Strings.JoinBetween", "The count must be greater than zero"
     ElseIf count = 0 Then
         Exit Function
     End If
     
-    Dim subset() As String
-    ReDim subset(0 To count - 1) As String
+    Dim subset As Variant
+    ReDim subset(0 To count - 1)
     Dim idx As Long
     For idx = 0 To count - 1
         subset(idx) = stringsToJoin(idx + startIndex)
@@ -853,7 +880,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based starting index position of any element in stringsToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOfAny(ByVal baseString As String, ByRef stringsToFind() As String, Optional ByVal startPos As Long = 0, Optional ByVal Length As Long = 0) As Long
+Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startPos As Long = 0, Optional ByVal Length As Long = 0) As Long
     If Length = 0 Then Length = Len(baseString)
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
@@ -1293,7 +1320,6 @@ Public Function Substring(ByVal baseString As String, ByVal startIndex As Long, 
         Exit Function
     End If
     
-    If count = -1 Then count = Len(baseString) - startIndex
     If count = -1 Then
         Substring = Mid$(baseString, startIndex + 1)
     Else
@@ -1385,26 +1411,28 @@ End Function
 '''<remarks></remarks>
 'TODO - .Split - add all of the remarks at https://learn.microsoft.com/en-us/dotnet/api/system.string.split?view=net-7.0#system-string-split(system-char()-system-int32-system-stringsplitoptions)
 '''===================================================================================================================================================
-Public Function Split(ByVal baseString As String, ByVal includeEmptyEntries As Boolean, ByVal trimEntries As Boolean, ParamArray separators() As Variant) As String()
-    'TODO .Split implement includeemptyentries, trimentries
-    Dim delims() As String
+Public Function Split(ByVal baseString As String, ByVal includeEmptyEntries As Boolean, ByVal trimEntries As Boolean, ParamArray separators() As Variant) As Variant
+    'TODO .Split implement includeEmptyEntries and trimEntries options
+    Dim delims As Variant
     ReDim delims(0 To UBound(separators))
     Dim idx As Long
     For idx = 0 To UBound(separators)
         delims(idx) = CStr(separators(idx))
     Next idx
 
-    Dim result() As String
+    Dim result As Variant
     ReDim result(0 To Len(baseString) * 2) 'worse case scenario?
 
     Dim pos As Long
     Dim startPos As Long
     For idx = 0 To UBound(result)
-        startPos = pos
-        pos = Strings.IndexOfAny(baseString, delims, pos)
-        result(idx) = Strings.Substring(baseString, startPos, pos - startPos) 'TODO - .Split indexes aren't working
-        pos = pos + 1
+        
+        pos = Strings.IndexOfAny(baseString, delims, startPos)
+        result(idx) = Strings.Substring(baseString, startPos, pos)
+        startPos = startPos + pos + 1
+        If pos = -1 Then Exit For
     Next idx
+    ReDim Preserve result(0 To idx)
     Split = result
 End Function
 
@@ -1419,12 +1447,16 @@ End Function
 '''<param name="count">The length of the substring in this instance.</param>
 '''<returns>A string array whose elements are the length number of characters in the base string starting from character position startIndex.</returns>
 '''===================================================================================================================================================
-Public Function ToCharArray(ByVal baseString As String, Optional ByVal startIndex As Long, Optional ByVal count As Long) As String()
-    Dim characters() As String
-    ReDim characters(0 To Len(baseString)) As String
+Public Function ToCharArray(ByVal baseString As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1) As Variant
+    If count = -1 Then
+        count = Len(baseString) - startIndex
+    End If
+    
+    Dim characters As Variant
+    ReDim characters(0 To count - 1)
     Dim idx As Long
     Do
-        characters(startIndex + idx) = Mid$(baseString, startIndex + idx + 1, 1)
+        characters(idx) = Mid$(baseString, startIndex + idx + 1, 1)
         idx = idx + 1
     Loop While idx < count
     ToCharArray = characters
@@ -1440,13 +1472,13 @@ End Function
 '''<error cref="13">An element of the input array cannot be converted to a string.</error>
 '''<returns>A string array whose elements the string equivalents of the values of inputArray.</returns>
 '''===================================================================================================================================================
-Public Function ToStringArray(ByRef inputArray() As Variant) As String()
-    Dim outputarray() As String
-    ReDim outputarray(LBound(inputArray) To UBound(inputArray))
+Public Function ToStringArray(ByVal inputArray As Variant) As String()
+    Dim outarray() As String
+    ReDim outarray(LBound(inputArray) To UBound(inputArray))
     Dim idx As Long
     On Error GoTo ErrorCannotConvertToString:
-    For idx = 0 To UBound(outputarray)
-        outputarray(idx) = CStr(inputArray(idx))
+    For idx = 0 To UBound(outarray)
+        outarray(idx) = CStr(inputArray(idx))
     Next idx
     On Error GoTo 0
     Exit Function
@@ -1522,7 +1554,7 @@ Public Function TrimLeft(ByVal baseString As String) As String
 End Function
 
 
-' * @example Truncate("This is a long sentence", 10)  -> "This is..."
+
 '''===================================================================================================================================================
 '''<summary>
 '''Returns a new string truncated after the specified length with an extension added to note the truncation.
@@ -1533,7 +1565,7 @@ End Function
 '''<returns>A string truncated to count characters, with the added extension appended to the end.</returns>
 '''<remarks>Implementation courtesy of Robert Todar, <see href="https://github.com/todar/VBA-Strings/blob/master/StringFunctions.bas#L185">VBA-Strings</see>.</remarks>
 '''===================================================================================================================================================
-Public Function Truncate(ByRef baseString As String, ByVal count As Long, Optional ByVal extension As String = "...") As String
+Public Function Truncate(ByVal baseString As String, ByVal count As Long, Optional ByVal extension As String = "...") As String
     If Len(baseString) <= count Then
         Truncate = baseString
         Exit Function
