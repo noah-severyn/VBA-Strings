@@ -1677,7 +1677,7 @@ End Function
 '''<param name="tolerance">Specifies the limit for how far away from the lineWidth to find the nearest wrap location. Default is 4 characters.</param>
 '''<returns>Wrapped text delineated with a new line character</returns>
 '''===================================================================================================================================================
-Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal newLineChars As String = vbNewLine, Optional ByVal chopAtExactly As Boolean = False, _
+Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal newLineChar As String = vbNewLine, Optional ByVal chopAtExactly As Boolean = False, _
     Optional ByVal tolerance As Long = 4) As String
     'TODO - allow for indents:
     'initial_indent: (default: '') String that will be prepended to the first line of wrapped output. Counts towards the length of the first line. The empty string is not indented.
@@ -1686,7 +1686,7 @@ Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Option
         Dim endPos As Long
         Do
             endPos = endPos + lineWidth
-            Wrap = Wrap & Mid$(baseString, endPos - lineWidth + 1, lineWidth) & newLineChars
+            Wrap = Wrap & Mid$(baseString, endPos - lineWidth + 1, lineWidth) & newLineChar
         Loop While endPos < Len(baseString)
         Wrap = Wrap & Mid$(baseString, endPos + 1)
         Exit Function
@@ -1705,9 +1705,9 @@ Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Option
 '                nextWrapLocn = nextWrapLocn + 1 'Edge case to not split in between double slash escape sequences
 '            End If
             
-            Wrap = Wrap & Mid$(baseString, pos + 1, nextWrapLocn - pos) & newLineChars
+            Wrap = Wrap & VBA.Trim$(Mid$(baseString, pos + 1, nextWrapLocn - pos)) & newLineChar
             pos = nextWrapLocn
-        Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth - tolerance < Len(baseString)
+        Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth + tolerance < Len(baseString)
         Wrap = Wrap & Mid$(baseString, pos + 1)
         Exit Function
     End If
