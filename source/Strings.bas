@@ -1204,7 +1204,7 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided comparison type.
+'''Returns a new string in which all occurrences of a specified string are replaced with another specified string, using the provided comparison type.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="oldString">The string to be replaced.</param>
@@ -1236,6 +1236,53 @@ Public Function Replace(ByVal baseString As String, ByVal oldString As String, B
     End If
     
 End Function
+
+
+
+'''===================================================================================================================================================
+'''<summary>
+'''Returns a new string in which all occurrences of the specified strings are replaced with another specified string, using the provided comparison type.
+'''</summary>
+'''<param name="baseString">Any valid string.</param>
+'''<param name="replacementPairs">Collection of values to replace. Key = oldString (the string to be replaced), Value = newString (the string to replace all occurrences of oldValue)</param>
+'''<param name="newString"></param>
+'''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
+'''<error cref="9">String to replace cannot be null.</error>
+'''<returns>A string that is equivalent to the current string except that all instances of oldString are replaced with newString. If oldString is not found in the current instance, the method returns the current instance unchanged.</returns>
+'''===================================================================================================================================================
+Public Function ReplaceAny(ByVal baseString As String, ByVal replacementPairs As Scripting.Dictionary, Optional ByVal compare As StringComparison = StringComparison.Default) As String
+    Dim oldString As String
+    Dim newString As String
+    Dim result As String
+    
+    If compare Mod 2 = 1 Then
+        result = LCase$(baseString)
+    End If
+    
+    Dim idx As Long
+    For idx = 0 To replacementPairs.Count - 1
+        oldString = replacementPairs.Keys(idx)
+        newString = replacementPairs.Items(idx)
+        If oldString = vbNullString Then
+            Err.Raise 9, "Strings.Replace", "String to replace cannot be null."
+        ElseIf compare Mod 2 = 1 Then
+            oldString = LCase$(oldString)
+        End If
+        
+        If compare = Binary Or compare = BinaryIgnoreCase Then
+            result = VBA.Replace(result, oldString, newString, , , vbBinaryCompare)
+        ElseIf compare = text Or compare = TextIngnoreCase Then
+            result = VBA.Replace(result, oldString, newString, , , vbTextCompare)
+        ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
+            result = VBA.Replace(result, oldString, newString, , , vbDatabaseCompare)
+        Else
+            result = VBA.Replace(result, oldString, newString)
+        End If
+    Next idx
+    ReplaceAny = result
+End Function
+
+
 
 'TODO - replace & replacebetween with compare and direction
 'Public Sub Replace(ByVal oldString As String, ByVal newString As String, Optional ByVal numberOfSubstitutions As Long = -1, Optional ByVal direction As ProcessDirection = ProcessDirection.FromStart)
