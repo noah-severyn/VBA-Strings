@@ -87,8 +87,8 @@ End Enum
 '@Ignore UseMeaningfulName
 Public Function AscW2(ByVal character As String) As Long
     If Len(character) > 1 Then
-        character = Strings.Left(character, 1)
-    ElseIf Strings.IsNullOrEmpty(character) Then
+        character = VBA.Left$(character, 1)
+    ElseIf character = vbNullString Then
         Err.Raise 9, "Strings.AscW2", "String cannot be null or empty."
     End If
         
