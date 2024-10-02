@@ -1350,7 +1350,7 @@ End Function
 '''<returns>A string that is equivalent to the substring that begins at startIndex of baseString, the baseString if count is 0, or vbnullstring if startIndex is equal to the length of this instance.</returns>
 '''===================================================================================================================================================
 Public Function Substring(ByVal baseString As String, ByVal startIndex As Long, Optional ByVal count As Long = -1) As String
-    If startIndex < 0 Or startIndex > Len(baseString) Then
+    If startIndex < 0 Then
         Err.Raise 9, "Strings.Substring", "Start index must be greater than zero."
     ElseIf count < -1 Then
         Err.Raise 5, "Strings.Substring", "Count must be greater than zero."
@@ -1363,9 +1363,9 @@ Public Function Substring(ByVal baseString As String, ByVal startIndex As Long, 
     End If
     
     If count = -1 Then
-        Substring = Mid$(baseString, startIndex + 1)
+        Substring = VBA.Mid$(baseString, startIndex + 1)
     Else
-        Substring = Mid$(baseString, startIndex + 1, count)
+        Substring = VBA.Mid$(baseString, startIndex + 1, count)
     End If
 End Function
 
@@ -1373,17 +1373,21 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Retrieves a substring from this instance. The substring starts at the end of firstString and ends at the start location of secondString, optionally beginning the search for firstString as startIndex.
+'''Retrieves a substring from this instance. The substring starts at the end of firstString and ends at the start location of secondString, optionally beginning the search for firstString at startIndex.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="firstString">String marking the start of the substring.</param>
 '''<param name="secondString">String marking the end of the substring</param>
+'''<error cref="9">Start index must be greater than zero.</error>
 '''<error cref="9">Value of first string was not found in the base string.</error>
 '''<error cref="9">Value of second string was not found in the base string.</error>
 '''<param name="startIndex">The zero-based starting character position to begin searching for firstString at.</param>
 '''===================================================================================================================================================
 Public Function SubstringBetween(ByVal baseString As String, ByVal firstString As String, ByVal secondString As String, Optional ByVal startIndex As Long = 0) As String
-    Dim startPos As Long: startPos = Strings.IndexOf(baseString, firstString, startIndex) + Strings.Length(firstString)
+    Dim startPos As Long: startPos = Strings.IndexOf(baseString, firstString, startIndex) + Len(firstString)
+    If startIndex < 0 Then
+        Err.Raise 9, "Strings.Substring", "Start index must be greater than zero."
+    End If
     If startPos = -1 Then
         Err.Raise 9, "Strings.SubstringBetween", "Value of first string was not found in the base string."
     End If
@@ -1392,7 +1396,7 @@ Public Function SubstringBetween(ByVal baseString As String, ByVal firstString A
         Err.Raise 9, "Strings.SubstringBetween", "Value of second string was not found in the base string."
     End If
     
-    SubstringBetween = Strings.Substring(baseString, startPos, endPos - startPos)
+    SubstringBetween = VBA.Mid$(baseString, startPos, endPos - startPos)
 End Function
 
 
