@@ -34,38 +34,14 @@ Option Explicit
 '''</summary>
 '''<see href="https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/comparison-constants"/>
     '''<summary>
-    '''Performs a comparison by using the current setting of the Option Compare statement.
+    '''Indicates the default option settings for string comparisons.
     '''</summary>
     '''<summary>
-    '''Performs a comparison by using the current setting of the Option Compare statement, ignoring case.
+    '''Indicates that the string comparison must ignore case.
     '''</summary>
-    '''<summary>
-    '''Performs a binary comparison.
-    '''</summary>
-    '''<summary>
-    '''Performs a binary comparison, ignoring case.
-    '''</summary>
-    '''<summary>
-    '''Performs a textual comparison.
-    '''</summary>
-    '''<summary>
-    '''Performs a textual comparison, ignoring case.
-    '''</summary>
-    '''<summary>
-    '''For Microsoft Access (Windows only), performs a comparison based on information contained in your database.
-    '''</summary>
-    '''<summary>
-    '''For Microsoft Access (Windows only), performs a comparison based on information contained in your database, ignoring case.
-    '''</summary>
-Public Enum StringComparison
+Public Enum CompareOptions
     Default = 0
-    DefaultIgnoreCase = 1
-    Binary = 2
-    BinaryIgnoreCase = 3
-    text = 4
-    TextIngnoreCase = 5
-    Database = 6
-    DatabaseIgnoreCase = 7
+    IgnoreCase = 1
 End Enum
 
 
@@ -284,7 +260,7 @@ End Function
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison..</param>
 '''<returns>true if the stringToFind ocurrs within the baseString; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function Contains(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function Contains(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     Contains = IndexOf(baseString, stringToFind, , compare) >= 0
 End Function
 
@@ -302,7 +278,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>true if the stringToFind ocurrs within the baseString after the startIndex; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function ContainsAfter(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function ContainsAfter(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     If startIndex < 0 Then
         Err.Raise 9, "Strings.ContainsAfter", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
@@ -327,7 +303,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>true if the stringToFind ocurrs within the baseString before the endIndex; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function ContainsBefore(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function ContainsBefore(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal endIndex As Long, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     If endIndex < 0 Then
         Err.Raise 9, "Strings.ContainsBefore", "End index must be greater than zero."
     End If
@@ -348,7 +324,7 @@ End Function
 '''<error cref="9">Strings to find must be an array of strings.</error>
 '''<returns>true if any of the strings in stringsToFind ocurr within the baseString; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function ContainsAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function ContainsAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     If Not IsArray(stringsToFind) Then
         Err.Raise 9, "Strings.ContainsAny", "Strings to find must be an array of strings."
     End If
@@ -416,7 +392,7 @@ End Sub
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<returns>The count of ocurrences within the base string.</returns>
 '''===================================================================================================================================================
-Public Function CountSubstring(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function CountSubstring(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim locn As Long: locn = IndexOf(baseString, stringToFind, locn)
 
     Do While locn >= 0
@@ -468,8 +444,8 @@ End Function
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<returns>true if stringToFind matches the end of the base string; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function EndsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
-    If StringComparison = StringComparison.Default Then
+Public Function EndsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
+    If CompareOptions = CompareOptions.Default Then
         EndsWith = Right$(baseString, Len(stringToFind)) = stringToFind
     Else
         EndsWith = IndexOfBetween(baseString, stringToFind, Len(baseString) - Len(stringToFind), Len(stringToFind), compare) >= 0
@@ -487,7 +463,7 @@ End Function
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<returns>true if any of stringsToFind matches the end of the base string; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function EndsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function EndsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     Dim idx As Long
     For idx = 0 To UBound(stringsToFind)
         EndsWithAny = EndsWith(baseString, stringsToFind(idx), compare)
@@ -506,7 +482,7 @@ End Function
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<returns>true if the strings are identical; otherwise, false. If compareString is null, the method returns false.</returns>
 '''===================================================================================================================================================
-Public Function Equals(ByVal baseString As String, ByVal compareString As String, ByVal compare As StringComparison) As Boolean
+Public Function Equals(ByVal baseString As String, ByVal compareString As String, ByVal compare As CompareOptions) As Boolean
     If compareString = vbNullString Then
         Equals = False
         Exit Function
@@ -532,7 +508,7 @@ End Function
 '''<returns>true if any of the strings in compareStrings are identical to the base string.; otherwise, false.</returns>
 '''<remarks>compareStrings can be a series of strings, a collection, an array, or any combination of the three.</remarks>
 '''===================================================================================================================================================
-Public Function EqualsAny(ByVal baseString As String, ByVal compare As StringComparison, ParamArray compareStrings() As Variant) As Boolean
+Public Function EqualsAny(ByVal baseString As String, ByVal compare As CompareOptions, ParamArray compareStrings() As Variant) As Boolean
     Dim idx As Long
     Dim idxInner As Long
     For idx = LBound(compareStrings) To UBound(compareStrings)
@@ -568,7 +544,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based index position of stringToFind from the start of the base string if that string is found, or -1 if it is not. If stringToFind is null, the return value is startIndex.</returns>
 '''===================================================================================================================================================
-Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim startPos As Long
     If startIndex < 0 Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
@@ -583,21 +559,15 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
         count = Len(baseString) - startIndex
     End If
     
-    If compare Mod 2 = 1 Then
-        baseString = LCase$(baseString)
-        stringToFind = LCase$(stringToFind)
+    Dim vbComp As VbCompareMethod
+    If compare = CompareOptions.IgnoreCase Then
+        vbComp = vbTextCompare
+    Else
+        vbComp = vbBinaryCompare
     End If
     startPos = startIndex + 1 'Adjustment for the 1-based strings in VBA
-
-    If compare = Binary Or compare = BinaryIgnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = text Or compare = TextIngnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
-    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
-    Else
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind) - 1
-    End If
+    
+    IndexOf = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbComp) - 1
     If IndexOf <> -1 Then IndexOf = IndexOf + startPos
 End Function
 
@@ -616,7 +586,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based index position of the first occurrence in this instance where any string in stringsToFind was found; -1 if no string in stringsToFind was found.</returns>
 '''===================================================================================================================================================
-Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal Count As Long = 0, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim maxLoops As Long
     If startIndex < 0 Then
         Err.Raise 9, "Strings.IndexOfAny", "Start index must be greater than zero."
@@ -631,27 +601,27 @@ Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Va
         End If
         maxLoops = UBound(stringsToFind) - LBound(stringsToFind) + 1
     ElseIf TypeName(stringsToFind) = "Collection" Then
-        If stringsToFind.count = 0 Then
+        If stringsToFind.Count = 0 Then
             IndexOfAny = startIndex
             Exit Function
         End If
-        maxLoops = stringsToFind.count
+        maxLoops = stringsToFind.Count
     End If
     
-    If count = -1 Then
-        count = Len(baseString) - startIndex
-    ElseIf count = 0 Then
-        count = Len(baseString)
+    If Count = -1 Then
+        Count = Len(baseString) - startIndex
+    ElseIf Count = 0 Then
+        Count = Len(baseString)
     End If
-    If startIndex + count > Len(baseString) Then
-        count = Len(baseString) - startIndex + 1
+    If startIndex + Count > Len(baseString) Then
+        Count = Len(baseString) - startIndex + 1
     End If
     
     Dim idx As Long
     Dim result As Long
     IndexOfAny = 99999999
     For idx = 0 To maxLoops - 1
-        result = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, count, compare)
+        result = Strings.IndexOf(baseString, stringsToFind(idx - CLng(TypeName(stringsToFind) = "Collection")), startIndex, Count, compare)
         If result < IndexOfAny And result <> -1 Then
             IndexOfAny = result
         End If
@@ -843,7 +813,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based starting index position of the stringToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = -2, Optional ByVal count As Long = -1, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = -2, Optional ByVal count As Long = -1, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     If startIndex < 0 And startIndex <> -2 Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
     ElseIf startIndex > Len(baseString) Then
@@ -855,9 +825,11 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
         count = Len(baseString) - startIndex
     End If
     
-    If compare Mod 2 = 1 Then
-        baseString = LCase$(baseString)
-        stringToFind = LCase$(stringToFind)
+    Dim vbComp As VbCompareMethod
+    If compare = CompareOptions.IgnoreCase Then
+        vbComp = vbTextCompare
+    Else
+        vbComp = vbBinaryCompare
     End If
     
     Dim substr As String
@@ -866,17 +838,8 @@ Public Function LastIndexOf(ByVal baseString As String, ByVal stringToFind As St
     Else
         substr = baseString
     End If
-
-    If compare = Binary Or compare = BinaryIgnoreCase Then
-        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbBinaryCompare) - 1
-    ElseIf compare = text Or compare = TextIngnoreCase Then
-        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbTextCompare) - 1
-    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbDatabaseCompare) - 1
-    Else
-        LastIndexOf = InStrRev(substr, stringToFind) - 1
-    End If
-    LastIndexOf = LastIndexOf + startIndex - count
+    
+    LastIndexOf = InStrRev(substr, stringToFind, startIndex + 1, vbComp) - 1
 End Function
 
 
@@ -896,7 +859,7 @@ End Function
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based starting index position of any element in stringsToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim maxLoops As Long
     If startIndex < 0 Then
         Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be greater than zero."
@@ -1213,35 +1176,25 @@ End Function
 '''<error cref="9">String to replace cannot be null.</error>
 '''<returns>A string that is equivalent to the current string except that all instances of oldString are replaced with newString. If oldString is not found in the current instance, the method returns the current instance unchanged.</returns>
 '''===================================================================================================================================================
-Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As StringComparison = StringComparison.Default) As String
+Public Function Replace(ByVal baseString As String, ByVal oldString As String, ByVal newString As String, Optional ByVal compare As CompareOptions = CompareOptions.Default) As String
     If oldString = vbNullString Then
         Err.Raise 9, "Strings.Replace", "String to replace cannot be null."
     End If
     
-    Dim tempBase As String
-    Dim tempOld As String
-    If compare Mod 2 = 1 Then
-        tempBase = LCase$(tempBase)
-        tempOld = LCase$(tempOld)
-    End If
-
-    If compare = Binary Or compare = BinaryIgnoreCase Then
-        Replace = VBA.Replace(baseString, oldString, newString, , , vbBinaryCompare)
-    ElseIf compare = text Or compare = TextIngnoreCase Then
-        Replace = VBA.Replace(baseString, oldString, newString, , , vbTextCompare)
-    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        Replace = VBA.Replace(baseString, oldString, newString, , , vbDatabaseCompare)
+    Dim vbComp As VbCompareMethod
+    If compare = CompareOptions.IgnoreCase Then
+        vbComp = vbTextCompare
     Else
-        Replace = VBA.Replace(baseString, oldString, newString)
+        vbComp = vbBinaryCompare
     End If
-    
+    Replace = VBA.Replace(baseString, oldString, newString, , , vbComp)
 End Function
 
 
 
 '''===================================================================================================================================================
 '''<summary>
-'''Returns a new string in which all occurrences of the specified strings are replaced with another specified string, using the provided comparison type.
+'''Returns a new string in which all occurrences of all the specified strings are replaced with another specified string, using the provided comparison type.
 '''</summary>
 '''<param name="baseString">Any valid string.</param>
 '''<param name="replacementPairs">Collection of values to replace. Key = oldString (the string to be replaced), Value = newString (the string to replace all occurrences of oldValue)</param>
@@ -1250,36 +1203,29 @@ End Function
 '''<error cref="9">String to replace cannot be null.</error>
 '''<returns>A string that is equivalent to the current string except that all instances of oldString are replaced with newString. If oldString is not found in the current instance, the method returns the current instance unchanged.</returns>
 '''===================================================================================================================================================
-Public Function ReplaceAny(ByVal baseString As String, ByVal replacementPairs As Scripting.Dictionary, Optional ByVal compare As StringComparison = StringComparison.Default) As String
-    Dim oldString As String
-    Dim newString As String
-    Dim result As String
+Public Function ReplaceAll(ByVal baseString As String, ByVal replacementPairs As Scripting.Dictionary, Optional ByVal compare As CompareOptions = CompareOptions.Default) As String
+    Dim result As String: result = baseString
     
-    If compare Mod 2 = 1 Then
-        result = LCase$(baseString)
+    Dim vbComp As VbCompareMethod
+    If compare = CompareOptions.IgnoreCase Then
+        vbComp = vbTextCompare
+    Else
+        vbComp = vbBinaryCompare
     End If
     
     Dim idx As Long
+    Dim oldString As String
+    Dim newString As String
     For idx = 0 To replacementPairs.Count - 1
         oldString = replacementPairs.Keys(idx)
         newString = replacementPairs.Items(idx)
         If oldString = vbNullString Then
             Err.Raise 9, "Strings.Replace", "String to replace cannot be null."
-        ElseIf compare Mod 2 = 1 Then
-            oldString = LCase$(oldString)
         End If
         
-        If compare = Binary Or compare = BinaryIgnoreCase Then
-            result = VBA.Replace(result, oldString, newString, , , vbBinaryCompare)
-        ElseIf compare = text Or compare = TextIngnoreCase Then
-            result = VBA.Replace(result, oldString, newString, , , vbTextCompare)
-        ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-            result = VBA.Replace(result, oldString, newString, , , vbDatabaseCompare)
-        Else
-            result = VBA.Replace(result, oldString, newString)
-        End If
+        result = VBA.Replace(result, oldString, newString, , , vbComp)
     Next idx
-    ReplaceAny = result
+    ReplaceAll = result
 End Function
 
 
@@ -1355,8 +1301,8 @@ End Function
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
 '''<returns>true if this instance begins with value; otherwise, false.</returns>
 '''===================================================================================================================================================
-Public Function StartsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
-    If StringComparison = StringComparison.Default Then
+Public Function StartsWith(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
+    If CompareOptions = CompareOptions.Default Then
         StartsWith = Left$(baseString, Len(stringToFind)) = stringToFind
     Else
         StartsWith = IndexOfBetween(baseString, stringToFind, 0, Len(stringToFind), compare) >= 0
@@ -1375,7 +1321,7 @@ End Function
 '''<returns>true if this instance begins with value; otherwise, false.</returns>
 '''<remarks>stringsToFind can be an array or collection</remarks>
 '''===================================================================================================================================================
-Public Function StartsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As StringComparison = StringComparison.Default) As Boolean
+Public Function StartsWithAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Boolean
     Dim idx As Long
     If IsArray(stringsToFind) Then
         For idx = 0 To UBound(stringsToFind)
