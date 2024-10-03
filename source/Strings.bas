@@ -1687,11 +1687,12 @@ End Function
 '''<summary>
 '''Wraps a paragraph of text so each line is at most lineWidth characters long, plus or minus a tolerance
 '''</summary>
-'''<param name="baseString">Any valid string.</param>
-'''<param name="lineWidth">Approximately the length of a line in number of characters.</param>
-'''<param name="newLineChars">Characters to use as the new line separators. Default is `vbNewLine`.</param>
-'''<param name="chopAtExactly">If specified, all traditional delimiters are ignored and each line will be exactly lineWidth characters wide. Default is FALSE.</param>
-'''<param name="tolerance">Specifies the limit for how far away from the lineWidth to find the nearest wrap location. Default is 4 characters.</param>
+'''<param name="baseString" type="String">Any valid string.</param>
+'''<param name="lineWidth" type="Long">Approximately the length of a line in number of characters.</param>
+'''<param name="newLineChars" type="String" optional="true" default="vbNewLine">Characters to use as the new line separators. Default is `vbNewLine`.</param>
+'''<param name="chopAtExactly" type="Boolean" optional="true" default="false">If specified, all traditional delimiters are ignored and each line will be exactly lineWidth characters wide. Default is FALSE.</param>
+'''<param name="tolerance" type="Long" optional="true" default="4">Specifies the limit for how far away from the lineWidth to find the nearest wrap location. The nearest wrap location is defined as the first space, dash, forward slash, or backwards slash within the tolerance.
+'''Default tolerance is 4 characters.</param>
 '''<returns>Wrapped text delineated with a new line character</returns>
 '''===================================================================================================================================================
 Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Optional ByVal newLineChar As String = vbNewLine, Optional ByVal chopAtExactly As Boolean = False, _
@@ -1710,6 +1711,7 @@ Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Option
     
     Else
         Dim pos As Long
+        Dim idx As Long
         Dim separators As Variant: separators = Array(" ", "-", "/", "\")
         Dim nextWrapLocn As Long
         Dim firstWrapLocn As Long
@@ -1718,14 +1720,20 @@ Public Function Wrap(ByVal baseString As String, ByVal lineWidth As Long, Option
             firstWrapLocn = Strings.IndexOfAny(baseString, separators, nextWrapLocn + lineWidth - tolerance)
             lastWrapLocn = Strings.LastIndexOfAny(baseString, separators, nextWrapLocn + lineWidth + tolerance, tolerance * 2)
             nextWrapLocn = IIf(firstWrapLocn > lastWrapLocn, firstWrapLocn, lastWrapLocn)
-'            If Mid$(baseString, nextWrapLocn, 1) = "\" Or Mid$(baseString, nextWrapLocn, 1) = "/" Then
-'                nextWrapLocn = nextWrapLocn + 1 'Edge case to not split in between double slash escape sequences
-'            End If
             
-            Wrap = Wrap & VBA.Trim$(Mid$(baseString, pos + 1, nextWrapLocn - pos)) & newLineChar
+            If nextWrapLocn = -1 Then
+                Wrap = Wrap & VBA.Right$(baseString, Len(baseString) - pos)
+                Exit Do
+            Else
+                For idx = 0 To UBound(separators)  'Edge case to not split in between double separators (e.g., double slash escape sequences)
+                    If Mid$(baseString, nextWrapLocn, 1) = separators(idx) And Mid$(baseString, nextWrapLocn + 1, 1) = separators(idx) Then
+                        nextWrapLocn = nextWrapLocn + 1
+                        Exit For
+                    End If
+                Next idx
+                Wrap = Wrap & VBA.Trim$(Mid$(baseString, pos + 1, nextWrapLocn - pos)) & newLineChar
+            End If
             pos = nextWrapLocn
         Loop While nextWrapLocn <> -1 And nextWrapLocn + lineWidth + tolerance < Len(baseString)
-        Wrap = Wrap & Mid$(baseString, pos + 1)
-        Exit Function
     End If
 End Function
