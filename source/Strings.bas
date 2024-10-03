@@ -717,6 +717,26 @@ Interpolate2InvalidArg:
 End Function
 
 
+'''===========================================================================================================================================================================================
+'''<summary>Indicates whether the specified character is alphanumeric.</summary>
+'''<param name="character" type="String">Character to evaluate. If this string has length greater than 1 then only the first character is examined</param>
+'''<returns type="Boolean">TRUE if character is alphanumeric; FALSE otherwise</returns>
+'''<remarks>
+'''Currently only valid for ASCII characters 0-127
+'''</remarks>
+'''===========================================================================================================================================================================================
+Public Function IsAlphanumeric(ByVal character As String) As Boolean
+    If character = vbNullString Then
+        IsAlphanumeric = False
+        Exit Function
+    End If
+    Dim isnumeric As Boolean: isnumeric = Asc(character) >= 48 And Asc(character) <= 57
+    Dim isalphabetic As Boolean: isalphabetic = (Asc(character) >= 65 And Asc(character) <= 90) Or (Asc(character) >= 97 And Asc(character) <= 122)
+
+    IsAlphanumeric = isnumeric Or isalphabetic
+End Function
+
+
 
 '''===================================================================================================================================================
 '''<summary>
