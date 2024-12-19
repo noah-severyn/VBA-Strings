@@ -564,14 +564,13 @@ End Function
 '''<param name="startIndex">The search starting position.</param>
 '''<param name="count">The number of character positions to examine.</param>
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
-'''<error cref="9">Start index must be greater than zero.</error>
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based index position of stringToFind from the start of the base string if that string is found, or -1 if it is not. If stringToFind is null, the return value is startIndex.</returns>
 '''===================================================================================================================================================
-Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = -1, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim startPos As Long
     If startIndex < 0 Then
-        Err.Raise 9, "Strings.IndexOf", "Start index must be greater than zero."
+        startIndex = 0
     ElseIf startIndex > Len(baseString) Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be less than the base string length."
     ElseIf stringToFind = vbNullString Then
@@ -583,21 +582,15 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
         count = Len(baseString) - startIndex
     End If
     
-    If compare Mod 2 = 1 Then
-        baseString = LCase$(baseString)
-        stringToFind = LCase$(stringToFind)
+    Dim vbComp As VbCompareMethod
+    If compare = CompareOptions.IgnoreCase Then
+        vbComp = vbTextCompare
+    Else
+        vbComp = vbBinaryCompare
     End If
     startPos = startIndex + 1 'Adjustment for the 1-based strings in VBA
-
-    If compare = Binary Or compare = BinaryIgnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbBinaryCompare) - 1
-    ElseIf compare = text Or compare = TextIngnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbTextCompare) - 1
-    ElseIf compare = Database Or compare = DatabaseIgnoreCase Then
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind, vbDatabaseCompare) - 1
-    Else
-        IndexOf = InStr(Mid$(baseString, startPos, count), stringToFind) - 1
-    End If
+    
+    IndexOf = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbComp) - 1
     If IndexOf <> -1 Then IndexOf = IndexOf + startPos
 End Function
 
@@ -612,14 +605,13 @@ End Function
 '''<param name="startIndex">The search starting position.</param>
 '''<param name="count">The number of character positions to examine.</param>
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
-'''<error cref="9">Start index must be greater than zero.</error>
 '''<error cref="9">Start index must be less than the base string length.</error>
 '''<returns>The zero-based index position of the first occurrence in this instance where any string in stringsToFind was found; -1 if no string in stringsToFind was found.</returns>
 '''===================================================================================================================================================
-Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim maxLoops As Long
     If startIndex < 0 Then
-        Err.Raise 9, "Strings.IndexOfAny", "Start index must be greater than zero."
+        startIndex = 0
     ElseIf startIndex > Len(baseString) Then
         Err.Raise 9, "Strings.IndexOfAny", "Start index must be less than the base string length."
     ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
@@ -892,16 +884,15 @@ End Function
 '''<param name="startIndex">The search starting position.</param>
 '''<param name="count">The number of character positions to examine.</param>
 '''<param name="compare">One of the enumeration values that specifies the rules to use in the comparison.</param>
-'''<error cref="9">Start index must be greater than zero.</error>
-'''<error cref="9">Start index must be less than the base string length.</error>
+'''<error cref="9">The 'stringsToFind' parameter is not an array or collection.</error>
 '''<returns>The zero-based starting index position of any element in stringsToFind if that string is found, or -1 if it is not found or if the base string is null</returns>
 '''===================================================================================================================================================
-Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As StringComparison = StringComparison.Default) As Long
+Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind As Variant, Optional ByVal startIndex As Long = 0, Optional ByVal count As Long = 0, Optional ByVal compare As CompareOptions = CompareOptions.Default) As Long
     Dim maxLoops As Long
     If startIndex < 0 Then
-        Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be greater than zero."
+        startIndex = 0
     ElseIf startIndex > Len(baseString) Then
-        Err.Raise 9, "Strings.LastIndexOfAny", "Start index must be less than the base string length."
+        startIndex = Len(baseString)
     ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
         Err.Raise 9, "Strings.LastIndexOfAny", "The 'stringsToFind' parameter is not an array or collection."
     ElseIf VBA.IsArray(stringsToFind) Then
