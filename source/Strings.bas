@@ -571,7 +571,8 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
     Dim startPos As Long
     If startIndex < 0 Then
         startIndex = 0
-    ElseIf startIndex > Len(baseString) Then
+    End If
+    If startIndex > Len(baseString) Then
         Err.Raise 9, "Strings.IndexOf", "Start index must be less than the base string length."
     ElseIf stringToFind = vbNullString Then
         IndexOf = startIndex
@@ -612,7 +613,8 @@ Public Function IndexOfAny(ByVal baseString As String, ByVal stringsToFind As Va
     Dim maxLoops As Long
     If startIndex < 0 Then
         startIndex = 0
-    ElseIf startIndex > Len(baseString) Then
+    End If
+    If startIndex > Len(baseString) Then
         Err.Raise 9, "Strings.IndexOfAny", "Start index must be less than the base string length."
     ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
         Err.Raise 9, "Strings.IndexOfAny", "The 'stringsToFind' parameter is not an array or collection."
@@ -891,7 +893,8 @@ Public Function LastIndexOfAny(ByVal baseString As String, ByVal stringsToFind A
     Dim maxLoops As Long
     If startIndex < 0 Then
         startIndex = 0
-    ElseIf startIndex > Len(baseString) Then
+    End If
+    If startIndex > Len(baseString) Then
         startIndex = Len(baseString)
     ElseIf Not VBA.IsArray(stringsToFind) And Not TypeName(stringsToFind) = "Collection" Then
         Err.Raise 9, "Strings.LastIndexOfAny", "The 'stringsToFind' parameter is not an array or collection."
