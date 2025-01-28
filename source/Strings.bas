@@ -589,9 +589,8 @@ Public Function IndexOf(ByVal baseString As String, ByVal stringToFind As String
     Else
         vbComp = vbBinaryCompare
     End If
-    startPos = startIndex + 1 'Adjustment for the 1-based strings in VBA
-    
-    IndexOf = InStr(1, Mid$(baseString, startPos, count), stringToFind, vbComp) - 1
+
+    IndexOf = InStr(1, Mid$(baseString, startIndex + 1, count), stringToFind, vbComp) - 1
     If IndexOf <> -1 Then IndexOf = IndexOf + startPos
 End Function
 
