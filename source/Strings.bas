@@ -227,21 +227,20 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Evaluates the arguments in order and returns the first argument that is not vbnullstring or null.
+'''Evaluates the arguments in order and returns the first argument that is not null, empty, or vbnullstring.
 '''</summary>
-'''<param name="args">One or more values to check.</param>
-'''<returns>The the first non null string.</returns>
+'''<param name="args" type="Variant">One or more values to examine.</param>
+'''<returns>The the first non null string, or vbnullstring if all arguments are null, empty, or vbnullstring.</returns>
 '''===================================================================================================================================================
 Public Function Coalesce(ParamArray args() As Variant) As String
     Dim idx As Long
-    Dim currentParam As Variant
     For idx = 0 To UBound(args)
-        currentParam = args(idx)
-        Coalesce = currentParam
-        If Not IsNull(currentParam) And currentParam <> vbNullString Then
+        If Not IsNull(args(idx)) And Not IsEmpty(args(idx)) And args(idx) <> vbNullString Then
+            Coalesce = args(idx)
             Exit Function
         End If
     Next idx
+    Coalesce = vbNullString
 End Function
 
 
