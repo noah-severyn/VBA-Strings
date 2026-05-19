@@ -797,22 +797,28 @@ End Function
 
 '''===================================================================================================================================================
 '''<summary>
-'''Concatenates all the elements of a string array, using the specified separator between each element.
+'''Concatenates all the elements of a list of strings, using the specified separator between each element.
 '''</summary>
 '''<param name="separator">The string to use as a separator. separator is included in the returned string only if value has more than one element.</param>
-'''<param name="stringsToJoin">An array that contains the elements to concatenate.</param>
+'''<param name="stringsToJoin">A list of strings containing elements to concatenate.</param>
 '''<returns>A string that consists of the elements in value delimited by the separator string.</returns>
 '''===================================================================================================================================================
 Public Function Join(ByVal separator As String, ByVal stringsToJoin As Variant) As String
     If VBA.IsArray(stringsToJoin) Then
         Join = VBA.Join(stringsToJoin, separator)
-    Else
+        Exit Function
+    ElseIf TypeName(stringsToJoin) = "Collection" Then
         Dim idx As Long
-        For idx = 1 To stringsToJoin.count
+        For idx = 1 To stringsToJoin.Count
             Join = Join & stringsToJoin(idx) & separator
         Next idx
-        Join = Left$(Join, Len(Join) - 1)
+    Else
+        Dim key As Variant
+        For Each key In stringsToJoin.Keys
+            Join = Join & stringsToJoin(key) & separator
+        Next key
     End If
+    Join = Left$(Join, Len(Join) - Len(separator))
 End Function
 
 
